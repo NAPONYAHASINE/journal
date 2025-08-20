@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block title %}Calendrier Économique{% endblock %}
+{% block content %}
+<h2>Calendrier Économique</h2>
+
+{% if session.get('is_admin') %}
+<form method="POST">
+  <h4>Ajouter un Événement</h4>
+  <div class="form-row">
+    <div class="form-group col-md-6">
+      <label for="title">Titre</label>
+      <input type="text" class="form-control" id="title" name="title" required>
+    </div>
+    <div class="form-group col-md-3">
+      <label for="date">Date</label>
+      <input type="date" class="form-control" id="date" name="date" required>
+    </div>
+    <div class="form-group col-md-3">
+      <label for="time">Heure</label>
+      <input type="time" class="form-control" id="time" name="time" required>
+    </div>
+  </div>
+  <div class="form-row">
+    <div class="form-group col-md-4">
+      <label for="impact">Impact</label>
+      <select class="form-control" id="impact" name="impact" required>
+        <option value="High">High</option>
+        <option value="Medium">Medium</option>
+        <option value="Low">Low</option>
+      </select>
+    </div>
+    <div class="form-group col-md-4">
+      <label for="currency">Devise</label>
+      <select class="form-control" id="currency" name="currency" required>
+        <option value="EUR">EUR</option>
+        <option value="USD">USD</option>
+        <option value="GBP">GBP</option>
+        <option value="JPY">JPY</option>
+        <option value="CHF">CHF</option>
+        <option value="CAD">CAD</option>
+        <option value="AUD">AUD</option>
+        <option value="NZD">NZD</option>
+        <option value="CNY">CNY</option>
+        <option value="TRY">TRY</option>
+        <option value="ZAR">ZAR</option>
+        <option value="RUB">RUB</option>
+        <option value="BRL">BRL</option>
+        <option value="MXN">MXN</option>
+        <option value="SGD">SGD</option>
+        <option value="HKD">HKD</option>
+        <option value="SEK">SEK</option>
+        <option value="NOK">NOK</option>
+        <option value="DKK">DKK</option>
+        <option value="PLN">PLN</option>
+        <option value="CZK">CZK</option>
+        <option value="HUF">HUF</option>
+        <option value="ILS">ILS</option>
+        <option value="KRW">KRW</option>
+        <option value="INR">INR</option>
+        <option value="SAR">SAR</option>
+        <option value="AED">AED</option>
+      </select>
+    </div>
+    <div class="form-group col-md-4">
+      <label for="description">Description</label>
+      <textarea class="form-control" id="description" name="description" rows="2"></textarea>
+    </div>
+  </div>
+  <button type="submit" class="btn btn-primary">Ajouter</button>
+</form>
+<hr>
+{% endif %}
+
+<h4>Événements à venir</h4>
+{% if events %}
+  <ul class="list-group">
+    {% for event in events %}
+    <li class="list-group-item">
+      <strong>{{ event.date.strftime('%Y-%m-%d %H:%M') }}</strong> - {{ event.title }} ({{ event.currency }}, Impact: {{ event.impact }})
+      {% if event.description %}
+      <p>{{ event.description }}</p>
+      {% endif %}
+      {% if session.get('is_admin') %}
+      <form action="{{ url_for('delete_event', event_id=event.id) }}" method="POST" style="display:inline;">
+        <button type="submit" class="btn btn-danger btn-sm float-right" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet événement ?');">Supprimer</button>
+      </form>
+      {% endif %}
+    </li>
+    {% endfor %}
+  </ul>
+{% else %}
+  <p>Aucun événement à venir.</p>
+{% endif %}
+{% endblock %}

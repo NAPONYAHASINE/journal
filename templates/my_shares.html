@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Mes Partages - Trading Journal{% endblock %}
+{% block content %}
+<h2>Mes Partages Reçus</h2>
+{% if shares %}
+  <ul class="list-group">
+    {% for s in shares %}
+      <li class="list-group-item">
+        <strong>{{ s.analysis.titre }}</strong> (partagé le {{ s.date_shared }} par l'utilisateur ID {{ s.shared_by_user_id }})
+        <a href="{{ url_for('share_detail', share_id=s.id) }}" class="btn btn-sm btn-info float-right">Voir</a>
+      </li>
+    {% endfor %}
+  </ul>
+{% else %}
+  <p>Aucun partage reçu.</p>
+{% endif %}
+{% endblock %}

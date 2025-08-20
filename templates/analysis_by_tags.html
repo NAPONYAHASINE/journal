@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Analyse par Tags{% endblock %}
+{% block content %}
+<h2>Analyse par Tags</h2>
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Tag</th>
+            <th>Nombre de Trades</th>
+            <th>Résultat Total</th>
+            <th>Taux de Réussite (%)</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for tag, data in trades_by_tag.items() %}
+        <tr>
+            <td>{{ tag }}</td>
+            <td>{{ data.count }}</td>
+            <td>{{ data.total_result }}</td>
+            <td>{{ data.win_rate }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

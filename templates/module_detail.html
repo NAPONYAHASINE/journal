@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container">
+    <div class="card mb-4">
+        <div class="card-body">
+            <h2 class="card-title">{{ module.nom }}</h2>
+            <p><b>Description :</b> {{ module.description }}</p>
+            <p><b>Nombre de cours :</b> {{ module.nb_cours }}</p>
+            <p><b>Compétences acquises :</b> {{ module.competences }}</p>
+            {% if module.image %}
+            <img src="{{ url_for('static', filename='uploads/' ~ module.image) }}" alt="Image du module" class="img-fluid card-img-top">
+            {% endif %}
+            {% if session.get('is_admin') %}
+            <a href="{{ url_for('create_cours', module_id=module.id) }}" class="btn btn-success mt-2">Ajouter un cours</a>
+            <form method="post" action="{{ url_for('delete_module', module_id=module.id) }}" onsubmit="return confirm('Supprimer ce module et tous ses cours ?');" class="d-inline-block">
+                <button type="submit" class="btn btn-danger mt-2">Supprimer le module</button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+    <h3>Cours publiés</h3>
+    <div class="row">
+        {% for cour in cours %}
+        <div class="col-md-6 mb-3">
+            <div class="card cours-card h-100" onclick="window.location='{{ url_for('cours_detail', cours_id=cour.id) }}'" tabindex="0" aria-label="Ouvrir le cours {{ cour.titre }}">
+                <div class="card-body">
+                    {% if cour.fichier and cour.fichier.endswith('.mp4') %}
+                        <video class="w-100 mb-2" controls poster="{{ url_for('static', filename='uploads/' ~ module.image) }}" style="max-height:220px;object-fit:cover;"><source src="{{ url_for('static', filename='uploads/' ~ cour.fichier) }}" type="video/mp4">Votre navigateur ne supporte pas la lecture vidéo.</video>
+                    {% elif cour.fichier and cour.fichier.endswith('.pdf') %}
+                        <img src="https://cdn-icons-png.flaticon.com/512/337/337946.png" alt="PDF" class="pdf-icon"/>
+                    {% endif %}
+                    <h5 class="card-title mt-2">{{ cour.titre }}</h5>
+                    <p class="card-text">{{ cour.description }}</p>
+                    <p><b>Prix :</b> {{ cour.prix }} €</p>
+                    <p class="text-muted creation-date">Créé le {{ cour.date_creation if cour.date_creation else 'N/A' }}</p>
+                    {% if session.get('is_admin') %}
+                    <form method="post" action="{{ url_for('delete_cours', cours_id=cour.id) }}" onsubmit="return confirm('Supprimer ce cours ?');" class="d-inline-block">
+                        <button type="submit" class="btn btn-danger btn-sm">Supprimer</button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <p>Aucun cours publié pour ce module.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

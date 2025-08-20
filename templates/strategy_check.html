@@ -1,0 +1,11 @@
+# Nouveau fichier pour afficher les résultats de la vérification des stratégies
+{% extends "base.html" %}
+{% block title %}Vérification des Stratégies{% endblock %}
+{% block content %}
+<h2>Vérification des Stratégies</h2>
+<ul>
+    {% for message in messages %}
+    <li>{{ message }}</li>
+    {% endfor %}
+</ul>
+{% endblock %}

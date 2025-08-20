@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <!-- Balise meta viewport pour l'adaptabilité -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ site_name }}{% endblock %}</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <!-- Animate.css -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <!-- Font Awesome for icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <!-- CSS personnalisé -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- PWA manifest et meta -->
+    <link rel="manifest" href="/static/manifest.json">
+    <meta name="theme-color" content="#181c20">
+    <link rel="icon" type="image/png" sizes="192x192" href="/static/css/icon-192.png">
+    <link rel="apple-touch-icon" href="/static/css/icon-192.png">
+</head>
+<body class="{% if session.get('theme') == 'dark' %}dark-theme{% endif %}">
+    {% include 'navbar.html' %}
+    <nav>
+        <ul>
+            {% if journal %}
+                <p>Journal actif : {{ journal.nom }}</p>
+                <li><a href="{{ url_for('dashboard', journal_id=journal.id) }}">Dashboard</a></li>
+            {% else %}
+                <!-- <p>Aucun journal actif</p> -->
+            {% endif %}
+            <!-- Suppression du lien vers performance_ranking car le point de terminaison n'existe pas -->
+            <!-- <li><a href="{{ url_for('performance_ranking') }}">Classement des Performances</a></li> -->
+            <!-- Suppression de l'entrée Tags -->
+            <!-- <li><a href="{{ url_for('strategy_check') }}">Vérification des Stratégies</a></li> -->
+        </ul>
+    </nav>
+    <div class="container mt-4">
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            {% for message in messages %}
+              <div class="alert alert-info">{{ message }}</div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+        {% block content %}{% endblock %}
+    </div>
+    <div class="trading-bg-svg" aria-hidden="true">
+      <svg id="candlestick-bg" viewBox="0 0 1440 400" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+        <g id="candles">
+          <!-- Les bougies seront générées dynamiquement en JS -->
+        </g>
+      </svg>
+    </div>
+    <div class="trading-bg-svg trading-bg-svg-bottom" aria-hidden="true">
+      <svg id="candlestick-bg-2" viewBox="0 0 1440 220" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+        <g id="candles2">
+          <!-- Les bougies seront générées dynamiquement en JS -->
+        </g>
+      </svg>
+    </div>
+    <script>
+    (function() {
+      // Empêche d'insérer plusieurs fois le script si déjà présent
+      if (window.__candlestickBgLoaded) return;
+      window.__candlestickBgLoaded = true;
+      // Premier graphique
+      var svg = document.getElementById('candlestick-bg');
+      if (!svg) return;
+      var g = svg.getElementById('candles');
+      var candleCount = 44;
+      var candleWidth = 16;
+      var candleGap = 16;
+      var minY = 70, maxY = 320, minBody = 32, maxBody = 110;
+      var candles = [];
+      for (var i = 0; i < candleCount; i++) {
+        var isBull = Math.random() > 0.5;
+        var bodyHeight = minBody + Math.random() * (maxBody - minBody);
+        var wickTop = minY + Math.random() * (maxY - minY - bodyHeight);
+        var wickBottom = wickTop + bodyHeight;
+        var open = isBull ? wickBottom - Math.random() * (bodyHeight * 0.7) : wickTop + Math.random() * (bodyHeight * 0.7);
+        var close = isBull ? wickTop + Math.random() * (bodyHeight * 0.7) : wickBottom - Math.random() * (bodyHeight * 0.7);
+        var color = isBull ? '#28e07b' : '#ff4d4f';
+        var x = 60 + i * (candleWidth + candleGap);
+        candles.push({x, wickTop, wickBottom, open, close, color, isBull});
+      }
+      function drawCandles(offset) {
+        g.innerHTML = '';
+        for (var i = 0; i < candles.length; i++) {
+          var c = candles[i];
+          var cx = c.x - offset;
+          if (cx < -candleWidth) continue;
+          if (cx > 1440) continue;
+          // Wick
+          var wick = document.createElementNS('http://www.w3.org/2000/svg','rect');
+          wick.setAttribute('x', cx + candleWidth/2 - 1.5);
+          wick.setAttribute('y', c.wickTop);
+          wick.setAttribute('width', 3);
+          wick.setAttribute('height', c.wickBottom - c.wickTop);
+          wick.setAttribute('fill', '#888');
+          wick.setAttribute('opacity', '0.45');
+          g.appendChild(wick);
+          // Body
+          var bodyY = Math.min(c.open, c.close);
+          var bodyH = Math.abs(c.open - c.close);
+          var body = document.createElementNS('http://www.w3.org/2000/svg','rect');
+          body.setAttribute('x', cx);
+          body.setAttribute('y', bodyY);
+          body.setAttribute('width', candleWidth);
+          body.setAttribute('height', Math.max(8, bodyH));
+          body.setAttribute('rx', 5);
+          body.setAttribute('fill', c.color);
+          body.setAttribute('opacity', '0.82');
+          g.appendChild(body);
+          // Glow effect
+          var glow = document.createElementNS('http://www.w3.org/2000/svg','rect');
+          glow.setAttribute('x', cx);
+          glow.setAttribute('y', bodyY);
+          glow.setAttribute('width', candleWidth);
+          glow.setAttribute('height', Math.max(8, bodyH));
+          glow.setAttribute('rx', 5);
+          glow.setAttribute('fill', c.color);
+          glow.setAttribute('opacity', '0.18');
+          glow.setAttribute('filter', 'url(#glow)');
+          g.appendChild(glow);
+        }
+      }
+      // Animation: défilement horizontal
+      var t0 = Date.now();
+      function animate() {
+        var t = (Date.now() - t0) / 1000;
+        var offset = (t * 32) % ((candleWidth + candleGap) * candleCount);
+        drawCandles(offset);
+        requestAnimationFrame(animate);
+      }
+      animate();
+      // Deuxième graphique (en dessous, défilement inverse, opacité plus faible)
+      var svg2 = document.getElementById('candlestick-bg-2');
+      if (!svg2) return;
+      var g2 = svg2.getElementById('candles2');
+      var candleCount2 = 38;
+      var candleWidth2 = 14;
+      var candleGap2 = 14;
+      var minY2 = 40, maxY2 = 180, minBody2 = 22, maxBody2 = 70;
+      var candles2 = [];
+      for (var i = 0; i < candleCount2; i++) {
+        var isBull = Math.random() > 0.5;
+        var bodyHeight = minBody2 + Math.random() * (maxBody2 - minBody2);
+        var wickTop = minY2 + Math.random() * (maxY2 - minY2 - bodyHeight);
+        var wickBottom = wickTop + bodyHeight;
+        var open = isBull ? wickBottom - Math.random() * (bodyHeight * 0.7) : wickTop + Math.random() * (bodyHeight * 0.7);
+        var close = isBull ? wickTop + Math.random() * (bodyHeight * 0.7) : wickBottom - Math.random() * (bodyHeight * 0.7);
+        var color = isBull ? '#00e6b8' : '#ff7a7a';
+        var x = 40 + i * (candleWidth2 + candleGap2);
+        candles2.push({x, wickTop, wickBottom, open, close, color, isBull});
+      }
+      function drawCandles2(offset) {
+        g2.innerHTML = '';
+        for (var i = 0; i < candles2.length; i++) {
+          var c = candles2[i];
+          var cx = c.x + offset;
+          if (cx < -candleWidth2) continue;
+          if (cx > 1440) continue;
+          // Wick
+          var wick = document.createElementNS('http://www.w3.org/2000/svg','rect');
+          wick.setAttribute('x', cx + candleWidth2/2 - 1.2);
+          wick.setAttribute('y', c.wickTop);
+          wick.setAttribute('width', 2.4);
+          wick.setAttribute('height', c.wickBottom - c.wickTop);
+          wick.setAttribute('fill', '#aaa');
+          wick.setAttribute('opacity', '0.28');
+          g2.appendChild(wick);
+          // Body
+          var bodyY = Math.min(c.open, c.close);
+          var bodyH = Math.abs(c.open - c.close);
+          var body = document.createElementNS('http://www.w3.org/2000/svg','rect');
+          body.setAttribute('x', cx);
+          body.setAttribute('y', bodyY);
+          body.setAttribute('width', candleWidth2);
+          body.setAttribute('height', Math.max(7, bodyH));
+          body.setAttribute('rx', 4);
+          body.setAttribute('fill', c.color);
+          body.setAttribute('opacity', '0.38');
+          g2.appendChild(body);
+        }
+      }
+      // Animation: défilement horizontal inverse
+      var t02 = Date.now();
+      function animate2() {
+        var t = (Date.now() - t02) / 1000;
+        var offset = (t * 18) % ((candleWidth2 + candleGap2) * candleCount2);
+        drawCandles2(offset);
+        requestAnimationFrame(animate2);
+      }
+      animate2();
+    })();
+    </script>
+    <!-- Scripts Bootstrap -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    {% block scripts %}{% endblock %}
+    <!-- Enregistrement du service worker PWA sans notifications push -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function() {
+          navigator.serviceWorker.register('/static/js/service-worker.js');
+        });
+      }
+    </script>
+</body>
+</html>

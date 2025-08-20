@@ -1,0 +1,189 @@
+{% extends 'base.html' %}
+{% block content %}
+<!-- SVG background for animated curves -->
+<div class="background-svg">
+  <svg width="100%" height="100%" viewBox="0 0 1920 1080" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="curveGrad1" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#b3c6ff"/>
+        <stop offset="100%" stop-color="#1a237e"/>
+      </linearGradient>
+      <linearGradient id="curveGrad2" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#e0e7ff"/>
+        <stop offset="100%" stop-color="#b3c6ff"/>
+      </linearGradient>
+    </defs>
+    <path d="M0 800 Q600 1000 1920 700" stroke="url(#curveGrad1)" stroke-width="110" fill="none" opacity="0.22">
+      <animate attributeName="d" dur="8s" repeatCount="indefinite"
+        values="M0 800 Q600 1000 1920 700; M0 700 Q900 1200 1920 800; M0 800 Q600 1000 1920 700" />
+    </path>
+    <path d="M0 300 Q900 0 1920 400" stroke="url(#curveGrad2)" stroke-width="80" fill="none" opacity="0.13">
+      <animate attributeName="d" dur="10s" repeatCount="indefinite"
+        values="M0 300 Q900 0 1920 400; M0 400 Q1200 200 1920 300; M0 300 Q900 0 1920 400" />
+    </path>
+  </svg>
+</div>
+
+<div class="landing-container glassmorph">
+    <header class="landing-header">
+        <h1>NGA|BLOOM-HUB</h1>
+        <p>Votre partenaire pour un trading structuré, transparent et performant.</p>
+        <div class="landing-actions">
+            <a href="{{ url_for('register') }}" class="btn btn-primary">Inscription</a>
+            <a href="{{ url_for('login') }}" class="btn btn-secondary">Connexion</a>
+        </div>
+    </header>
+    <section class="about-company">
+        <h2>À propos de l'application</h2>
+        <p>
+            NGA|BLOOM-HUB est une plateforme dédiée à l'accompagnement des traders dans leur parcours. Nous proposons des outils d'analyse, de suivi et de partage pour améliorer vos performances et votre discipline.
+        </p>
+    </section>
+    <section class="structures-section">
+        <h2>Les structures responsables</h2>
+        <div class="structure-block">
+            <div class="structure-header">
+                <img src="/static/uploads/logo_nga_capital.jpg" alt="Logo NGA Capital" class="structure-logo">
+                <h3 class="structure-title">NGA Capital</h3>
+            </div>
+            <p>
+                NGA Capital est une entité innovante, ambitieuse et visionnaire, dont la mission consiste à accompagner ses clients dans la génération de revenus via les marchés boursiers. Ce faisant, elle met à leur disposition des salles de trading physiques et en ligne, réunissant les meilleurs traders d’Afrique. Nous offrons ainsi aux investisseurs un accès à des capitaux substantiels, tout en obtenant des fonds et en opérant sur les marchés financiers en leur nom, avec une gestion des risques optimisée pour garantir un retour sur investissement optimal. Conscients des opportunités que recèle le continent, nous créons un environnement favorable à nos investisseurs, leur permettant de participer activement à la constitution d'un patrimoine collectif. Par ailleurs, nous prodiguons des conseils en investissement à nos partenaires, en favorisant la diversification dans des secteurs à fort potentiel de rentabilité, tout en minimisant les risques.
+            </p>
+            <div class="structure-image-block">
+                <img src="/static/uploads/equipe_nga_capital.jpg" alt="Équipe NGA Capital" class="structure-team-image">
+            </div>
+        </div>
+        <div class="structure-block">
+            <div class="structure-header">
+                <img src="/static/uploads/logo_bloom.jpg" alt="Logo Bloom Forex Trading Academy" class="structure-logo">
+                <h3 class="structure-title">Bloom Forex Trading Academy</h3>
+            </div>
+            <p>
+                Bloom Forex Trading Academy est une structure éducative dédiée à la formation en trading. Elle vise à outiller les traders débutants et professionnels grâce à des programmes adaptés, des ateliers pratiques et un accompagnement personnalisé, afin de favoriser la réussite sur les marchés financiers.
+            </p>
+        </div>
+    </section>
+    <section class="founder-section">
+        <h2>À propos du fondateur</h2>
+        <div class="founder-block">
+            <img src="/static/uploads/yan_daniel.jpg" alt="Yan Daniel NANGA" class="team-photo">
+            <div>
+                <h3>Yan Daniel NANGA</h3>
+                <p><strong>Fondateur NGA|Capital et Bloom Forex Trading Academy<br>Chief Investment Officer de NGA|Capital</strong></p>
+                <p>
+                    Yan Daniel NANGA est un trader expérimenté basé au Burkina Faso, avec 6 années d'expertise dans les marchés financiers. Fondateur de <strong>NGA|Capital</strong>, une société spécialisée dans la finance des marchés, il occupe également le poste de Chief Investment Officer (CIO) de l'entreprise. Visionnaire et passionné par la transmission de son savoir, il a créé la <strong>Bloom Forex Trading Academy</strong>, une académie dédiée à la formation en trading, visant à outiller les traders débutants et professionnels. Grâce à son leadership et à ses compétences, Yan Daniel NANGA est une figure influente dans le domaine du trading en Afrique.
+                </p>
+            </div>
+        </div>
+    </section>
+    <section class="team-section">
+        <h2>Notre équipe</h2>
+        <div class="team-list">
+            <div class="team-member">
+                <img src="/static/uploads/yan_daniel.jpg" alt="YAN DANIEL NANGA" class="team-photo">
+                <h3>YAN DANIEL NANGA</h3>
+                <p>Fondateur & CEO</p>
+            </div>
+            <div class="team-member">
+                <img src="/static/uploads/napon_yahasine.jpg" alt="CodeIsLive (CEO NAPON YAHASINE)" class="team-photo">
+                <h3>CodeIsLive (CEO NAPON YAHASINE)</h3>
+                <p>Support Informatique et Gestion</p>
+            </div>
+        </div>
+    </section>
+    <section class="cta-section">
+        <h2>Rejoignez-nous dès maintenant !</h2>
+        <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg">Créer un compte</a>
+        <a href="{{ url_for('login') }}" class="btn btn-secondary btn-lg">Se connecter</a>
+    </section>
+    <!-- Nouvelle section carrousel fonctionnalités -->
+    {% include '_features_carousel.html' %}
+</div>
+<style>
+body {
+  background: linear-gradient(120deg, #e0e7ff 0%, #f8fafc 100%);
+  min-height: 100vh;
+  font-family: 'Poppins', 'Segoe UI', 'Roboto', Arial, sans-serif;
+  position: relative;
+  overflow-x: hidden;
+}
+.background-svg {
+  position: fixed;
+  top: 0; left: 0; width: 100vw; height: 100vh;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.55;
+  filter: blur(0.5px) saturate(1.2);
+  animation: bgfade 2s cubic-bezier(.4,0,.2,1);
+}
+@keyframes bgfade {
+  from { opacity: 0; }
+  to { opacity: 0.55; }
+}
+.landing-container.glassmorph {
+  max-width: 1200px;
+  margin: 3.5rem auto 2rem auto;
+  padding: 3.5rem 2.5rem 2.5rem 2.5rem;
+  background: rgba(255,255,255,0.85);
+  border-radius: 36px;
+  box-shadow: 0 16px 64px #b3c6ff77, 0 2px 8px #fff8;
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+  -webkit-backdrop-filter: blur(8px) saturate(1.2);
+  backdrop-filter: blur(8px) saturate(1.2);
+  border: 2.5px solid #e0e7ff;
+  animation: fadeIn 1.2s cubic-bezier(.4,0,.2,1);
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(40px); }
+  to { opacity: 1; transform: none; }
+}
+.landing-header { text-align: center; margin-bottom: 2.8rem; position: relative; z-index: 2; }
+.landing-header h1 { font-size: 3.0rem; font-weight: 900; color: #1a237e; letter-spacing: 2px; text-shadow: 0 2px 18px #b3c6ff33, 0 8px 32px #fff8; }
+.landing-header p { color: #374151; font-size: 1.45rem; margin-bottom: 1.2rem; font-weight: 500; }
+.landing-actions { margin-top: 1.2rem; }
+.landing-actions .btn { margin: 0 0.7rem; font-size: 1.22rem; padding: 0.9rem 2.5rem; border-radius: 30px; box-shadow: 0 2px 12px #b3c6ff33; font-weight: 700; transition: background 0.2s, color 0.2s, transform 0.2s; letter-spacing: 1px; }
+.landing-actions .btn-primary { background: linear-gradient(90deg,#1a237e,#3949ab); color: #fff; border: none; }
+.landing-actions .btn-primary:hover { background: #3949ab; color: #fff; transform: translateY(-2px) scale(1.04); }
+.landing-actions .btn-secondary { background: #fff; color: #1a237e; border: 2px solid #1a237e; }
+.landing-actions .btn-secondary:hover { background: #e3e8ff; color: #1a237e; transform: translateY(-2px) scale(1.04); }
+.about-company, .team-section, .cta-section, .structures-section, .founder-section { margin-bottom: 2.7rem; position: relative; z-index: 2; }
+.about-company h2, .structures-section h2, .founder-section h2, .team-section h2, .cta-section h2 { color: #0d47a1; font-weight: 900; margin-bottom: 1.2rem; font-size: 2.2rem; letter-spacing: 1px; text-shadow: 0 2px 8px #b3c6ff22; }
+.structure-block { background: rgba(244,247,255,0.95); border-radius: 28px; padding: 2.5rem; margin-bottom: 2.2rem; box-shadow: 0 2px 32px #b3c6ff22; position: relative; animation: fadeIn 1.2s cubic-bezier(.4,0,.2,1); border: 1.5px solid #e0e7ff; }
+.structure-header { display: flex; align-items: center; gap: 2.5rem; margin-bottom: 1.2rem; }
+.structure-logo { height: 160px; width: 160px; object-fit: contain; background: #fff; border-radius: 28px; padding: 16px; border: 3px solid #b3c6ff; box-shadow: 0 4px 32px #b3c6ff33; transition: transform 0.2s; }
+.structure-logo:hover { transform: scale(1.10); box-shadow: 0 8px 32px #b3c6ff; }
+.structure-title { margin: 0; font-size: 2.4rem; color: #263238; font-weight: 900; }
+.structure-image-block { text-align: center; margin-top: 1.5rem; }
+.structure-team-image { max-width: 94%; border-radius: 22px; box-shadow: 0 4px 32px #b3c6ff55; border: 3px solid #b3c6ff; }
+.founder-block { display: flex; align-items: flex-start; gap: 3.2rem; background: rgba(247,247,255,0.97); border-radius: 28px; padding: 2.5rem; box-shadow: 0 2px 32px #b3c6ff22; animation: fadeIn 1.2s cubic-bezier(.4,0,.2,1); border: 1.5px solid #e0e7ff; }
+.founder-block .team-photo { width: 200px; height: 200px; border: 4px solid #b3c6ff; box-shadow: 0 2px 16px #b3c6ff33; }
+.founder-block h3 { color: #1a237e; font-weight: 900; font-size: 1.9rem; }
+.team-list { display: flex; gap: 3.2rem; justify-content: center; flex-wrap: wrap; }
+.team-member { text-align: center; background: rgba(255,255,255,0.97); border-radius: 28px; box-shadow: 0 2px 32px #b3c6ff22; padding: 1.9rem 1.5rem; min-width: 260px; transition: transform 0.2s, box-shadow 0.2s; animation: fadeIn 1.2s cubic-bezier(.4,0,.2,1); border: 1.5px solid #e0e7ff; }
+.team-member:hover { transform: translateY(-8px) scale(1.05); box-shadow: 0 8px 32px #b3c6ff55; }
+.team-photo { width: 150px; height: 150px; border-radius: 50%; object-fit: cover; margin-bottom: 1.1rem; border: 3px solid #b3c6ff; box-shadow: 0 2px 16px #b3c6ff33; }
+.team-member h3 { color: #263238; font-size: 1.35rem; font-weight: 900; margin-bottom: 0.2rem; }
+.team-member p { color: #607d8b; font-size: 1.13rem; }
+.cta-section { text-align: center; }
+.btn-lg { font-size: 1.55rem; padding: 1.2rem 3.2rem; border-radius: 30px; margin: 0 0.7rem; font-weight: 900; box-shadow: 0 2px 12px #b3c6ff33; }
+.btn-lg.btn-primary { background: linear-gradient(90deg,#1a237e,#3949ab); color: #fff; border: none; }
+.btn-lg.btn-primary:hover { background: #3949ab; color: #fff; transform: translateY(-2px) scale(1.04); }
+.btn-lg.btn-secondary { background: #fff; color: #1a237e; border: 2px solid #1a237e; }
+.btn-lg.btn-secondary:hover { background: #e3e8ff; color: #1a237e; transform: translateY(-2px) scale(1.04); }
+.carousel-section { margin-top: 3rem; text-align: center; position: relative; z-index: 2; }
+.carousel-section h2 { color: #0d47a1; font-weight: 900; margin-bottom: 1.5rem; font-size: 2.2rem; letter-spacing: 1px; }
+.carousel-container { display: flex; align-items: center; justify-content: center; position: relative; }
+.carousel-arrow { background: #fff; border: 2px solid #b3c6ff; border-radius: 50%; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 12px #b3c6ff33; cursor: pointer; transition: background 0.3s, transform 0.3s; }
+.carousel-arrow:hover { background: #e3e8ff; transform: scale(1.1); }
+.carousel-slide { display: flex; overflow: hidden; width: 100%; position: relative; }
+.carousel-slide .slide { min-width: 100%; transition: transform 0.5s ease; }
+@media (max-width: 1100px) {
+  .landing-container { padding: 1.2rem 0.2rem; }
+  .structure-header { flex-direction: column; gap: 0.7rem; }
+  .founder-block, .team-list { flex-direction: column; align-items: center; }
+  .structure-logo, .team-photo, .founder-block .team-photo { width: 110px !important; height: 110px !important; }
+}
+</style>
+{% endblock %}

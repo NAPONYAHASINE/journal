@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Modifier Utilisateur - Trading Journal{% endblock %}
+{% block content %}
+<h2>Modifier les informations de l'utilisateur</h2>
+<form method="POST">
+  <div class="form-group">
+    <label for="prenom">Prénom</label>
+    <input type="text" class="form-control" name="prenom" value="{{ user.prenom }}" required>
+  </div>
+  <div class="form-group">
+    <label for="nom">Nom</label>
+    <input type="text" class="form-control" name="nom" value="{{ user.nom }}" required>
+  </div>
+  <div class="form-group">
+    <label for="pays">Pays</label>
+    <input type="text" class="form-control" name="pays" value="{{ user.pays }}">
+  </div>
+  <div class="form-group">
+    <label for="email">Email</label>
+    <input type="email" class="form-control" name="email" value="{{ user.email }}" required>
+  </div>
+  <div class="form-group">
+    <label for="new_password">Nouveau mot de passe (laisser vide si inchangé)</label>
+    <input type="password" class="form-control" name="new_password">
+  </div>
+  <div class="form-check">
+    <input class="form-check-input" type="checkbox" name="is_admin" id="is_admin"
+           {% if user.is_admin %}checked{% endif %}>
+    <label class="form-check-label" for="is_admin">
+      Rendre ce compte administrateur
+    </label>
+  </div>
+  <button type="submit" class="btn btn-primary mt-3">Enregistrer les modifications</button>
+</form>
+<a href="{{ url_for('admin') }}" class="btn btn-secondary mt-3">Retour</a>
+{% endblock %}

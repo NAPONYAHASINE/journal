@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Assistance Admin - Trading Journal{% endblock %}
+{% block content %}
+<h2>Messages d'Assistance</h2>
+{% if messages %}
+  <ul class="list-group">
+    {% for msg in messages %}
+      <li class="list-group-item">
+        <strong>{{ msg.sujet }}</strong> – {{ msg.date_creation }}<br>
+        <a href="{{ url_for('conversation_detail', msg_id=msg.id) }}" class="btn btn-sm btn-primary mt-2">Voir/Répondre</a>
+      </li>
+    {% endfor %}
+  </ul>
+{% else %}
+  <p>Aucun message d'assistance reçu.</p>
+{% endif %}
+{% endblock %}

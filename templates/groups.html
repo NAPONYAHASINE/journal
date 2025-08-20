@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>Mes Groupes</h1>
+
+{% if groups %}
+    <ul>
+        {% for group in groups %}
+        <li>
+            <a href="{{ url_for('group_detail', group_id=group.id) }}">{{ group.name }}</a>
+            <p>{{ group.description }}</p>
+        </li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>Aucun groupe trouvé. Créez-en un nouveau !</p>
+{% endif %}
+
+<h2>Créer un nouveau groupe</h2>
+<form method="POST" action="{{ url_for('groups') }}">
+    <label for="name">Nom du groupe :</label>
+    <input type="text" id="name" name="name" required>
+
+    <label for="description">Description :</label>
+    <textarea id="description" name="description"></textarea>
+
+    <button type="submit" class="btn btn-primary">Créer</button>
+</form>
+{% endblock %}

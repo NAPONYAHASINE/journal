@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Mes Messages d'Assistance - Trading Journal{% endblock %}
+{% block content %}
+<h2>Mes Messages d'Assistance</h2>
+<form method="POST">
+  <div class="form-group">
+    <label for="sujet">Sujet</label>
+    <input type="text" class="form-control" name="sujet" required>
+  </div>
+  <div class="form-group">
+    <label for="message">Message</label>
+    <textarea class="form-control" name="message" rows="5" required></textarea>
+  </div>
+  <button type="submit" class="btn btn-primary">Envoyer</button>
+</form>
+<hr>
+<h4>Messages Envoyés</h4>
+{% if user_msgs %}
+  <ul class="list-group">
+    {% for m in user_msgs %}
+      <li class="list-group-item">
+        <strong>{{ m.sujet }}</strong> - {{ m.date_creation }}
+        <a href="{{ url_for('my_conversation', msg_id=m.id) }}" class="btn btn-sm btn-info float-right">Ouvrir</a>
+      </li>
+    {% endfor %}
+  </ul>
+{% else %}
+  <p>Aucun message d'assistance.</p>
+{% endif %}
+{% endblock %}

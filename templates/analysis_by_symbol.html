@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Analyse par Symbole{% endblock %}
+{% block content %}
+<h2>Analyse par Symbole</h2>
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Symbole</th>
+            <th>Nombre de Trades</th>
+            <th>Résultat Total</th>
+            <th>Taux de Réussite (%)</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for symbol, data in trades_by_symbol.items() %}
+        <tr>
+            <td>{{ symbol }}</td>
+            <td>{{ data.count }}</td>
+            <td>{{ data.total_result }}</td>
+            <td>{{ data.win_rate }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

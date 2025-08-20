@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Liaison de Plateformes - Trading Journal{% endblock %}
+{% block content %}
+<h2>Lier une plateforme pour {{ journal.nom }}</h2>
+<form method="POST">
+  <div class="form-group">
+    <label for="plateforme">Plateforme</label>
+    <select class="form-control" name="plateforme" required>
+      <option value="MT4">MT4</option>
+      <option value="MT5">MT5</option>
+      <option value="TradingView">TradingView</option>
+    </select>
+  </div>
+  <div class="form-group">
+    <label for="identifiant">Identifiant</label>
+    <input type="text" class="form-control" name="identifiant" required>
+  </div>
+  <div class="form-group">
+    <label for="details">Détails</label>
+    <input type="text" class="form-control" name="details">
+  </div>
+  <button type="submit" class="btn btn-primary">Lier la plateforme</button>
+</form>
+<hr>
+<h3>Plateformes liées</h3>
+{% if links %}
+  <ul class="list-group">
+    {% for link in links %}
+      <li class="list-group-item">
+        {{ link.plateforme }} - {{ link.identifiant }} - {{ link.details }}
+      </li>
+    {% endfor %}
+  </ul>
+{% else %}
+  <p>Aucune plateforme liée.</p>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,42 @@
+/* ...existing code... */
+.circle {
+    position: relative;
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: #e0e0e0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 10px;
+}
+
+.circle-content {
+    position: absolute;
+    font-size: 18px;
+    font-weight: bold;
+    color: #000;
+    text-align: center;
+}
+
+.circle p {
+    margin-top: 10px;
+    text-align: center;
+    font-size: 14px;
+}
+
+/* Ajout d'un style pour rendre le cœur plus visible */
+.fa-heart {
+    font-size: 32px; /* Augmentation de la taille de l'icône */
+    color: #ff0000; /* Couleur rouge vif pour une meilleure visibilité */
+    transition: color 0.3s ease; /* Transition pour un effet fluide */
+}
+
+.fa-heart.text-muted {
+    color: #999999; /* Couleur grisée plus foncée pour les cœurs non aimés */
+}
+
+.fa-heart:hover {
+    color: #ff3333; /* Couleur plus vive au survol */
+}
+/* ...existing code... */

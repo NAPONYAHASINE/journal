@@ -1,0 +1,353 @@
+{% extends "base.html" %}
+{% block title %}Dashboard - {{ journal.nom }}{% endblock %}
+{% block content %}
+<h2>Dashboard pour {{ journal.nom }}</h2>
+<p>Capital Initial : {{ journal.capital_initial }} {{ journal.devise }}</p>
+
+{% if stats and stats.solde is not none %}
+<p><strong>Solde actuel :</strong> {{ stats.solde }} {{ journal.devise }}</p>
+{% else %}
+<p><strong>Solde actuel :</strong> Données indisponibles</p>
+{% endif %}
+
+{% if stats and stats.mois and stats.gains_per_month %}
+<div class="container mt-5">
+  <h2 class="text-center mb-4">Tableau de Bord - {{ journal.nom }}</h2>
+  <div class="row">
+    <!-- Graphique à barres -->
+    <div class="col-md-6 mb-4">
+      <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">Gains Mensuels (€)</div>
+        <div class="card-body">
+          <canvas id="barChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Graphique en ligne -->
+    <div class="col-md-6 mb-4">
+      <div class="card shadow-sm">
+        <div class="card-header bg-success text-white">Nombre de Trades par Mois</div>
+        <div class="card-body">
+          <canvas id="lineChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <!-- Graphique en camembert -->
+    <div class="col-md-6 mb-4">
+      <div class="card shadow-sm">
+        <div class="card-header bg-danger text-white">Ratio Profit/Perte</div>
+        <div class="card-body">
+          <canvas id="pieChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Graphique radar -->
+    <div class="col-md-6 mb-4">
+      <div class="card shadow-sm">
+        <div class="card-header bg-warning text-white">Ratio Victoires/Défaites</div>
+        <div class="card-body">
+          <canvas id="radarChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% else %}
+<p>Aucune donnée disponible pour les graphiques.</p>
+{% endif %}
+
+<hr>
+<h3>Analyse par Symbole</h3>
+<table class="table table-bordered">
+  <thead>
+    <tr>
+      <th>Symbole</th>
+      <th>Nombre de Trades</th>
+      <th>Résultat Total</th>
+      <th>Taux de Réussite (%)</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for symbol, data in trades_by_symbol.items() %}
+    <tr>
+      <td>{{ symbol }}</td>
+      <td>{{ data.count }}</td>
+      <td>{{ data.total_result | round(2) }}</td>
+      <td>{{ data.win_rate | round(2) }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<hr>
+<h3>Analyse par Stratégie (Tags)</h3>
+<table class="table table-bordered">
+  <thead>
+    <tr>
+      <th>Tag</th>
+      <th>Nombre de Trades</th>
+      <th>Résultat Total</th>
+      <th>Taux de Réussite (%)</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for tag, data in trades_by_tag.items() %}
+    <tr>
+      <td>{{ tag }}</td>
+      <td>{{ data.count }}</td>
+      <td>{{ data.total_result | round(2) }}</td>
+      <td>{{ data.win_rate | round(2) }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<hr>
+<h3>Analyse par Stratégie</h3>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Stratégie</th>
+            <th>Nombre de Trades</th>
+            <th>Résultat Total</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for strategy, data in trades_by_tag.items() %}
+        <tr>
+            <td>{{ strategy }}</td>
+            <td>{{ data.count }}</td>
+            <td>{{ data.total_result }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<hr>
+<h3>Analyse par Heure du Jour</h3>
+<table class="table table-bordered">
+{% if platforms %}
+  <ul class="list-group mb-4">
+    {% for plat in platforms %} 
+      <li class="list-group-item">
+        <strong>{{ plat.plateforme }}</strong> - {{ plat.identifiant }} ({{ plat.details }})
+      </li>
+    {% endfor %}
+  </ul>
+{% else %}
+  <p>Aucune plateforme liée.</p>
+{% endif %}
+
+<div class="tabs">
+    <ul>
+        <li><a href="#profit_loss_ratio">Ratio Profit/Perte</a></li>
+        <li><a href="#strategy_check">Vérification des Stratégies</a></li>
+    </ul>
+</div>
+
+<div id="profit_loss_ratio">
+    <h3>Ratio Profit/Perte</h3>
+    <p>Ratio: {{ stats['profit_loss_ratio'] }}</p>
+</div>
+
+<div id="strategy_check">
+    <h3>Vérification des Stratégies</h3>
+    <ul>
+        {% for message in messages %}
+        <li>{{ message }}</li>
+        {% endfor %}
+    </ul>
+</div>
+<div class="mt-4">
+  <a href="{{ url_for('trades', journal_id=journal.id) }}" class="btn btn-info">Créer/Consulter Trades</a>
+  <a href="{{ url_for('analyses', journal_id=journal.id) }}" class="btn btn-warning">Créer/Consulter Analyses</a>
+  <a href="{{ url_for('link_platform', journal_id=journal.id) }}" class="btn btn-secondary">Lier Plateformes</a>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Déclaration des variables une seule fois
+const mois = {{ stats.mois | tojson | safe }};
+const gainsParMois = {{ stats.gains_per_month | tojson | safe }};
+const tradesCount = {{ stats.trades_count | tojson | safe }};
+const totalProfit = {{ stats.total_profit | safe }};
+const totalLoss = {{ stats.total_loss | safe }};
+const winRate = {{ stats.win_rate | safe }};
+const isDark = document.body.classList.contains('dark-theme');
+const colorPrimary = isDark ? '#4fc3f7' : '#007bff';
+const colorSuccess = isDark ? '#81c784' : '#28a745';
+const colorDanger = isDark ? '#e57373' : '#dc3545';
+const colorWarning = isDark ? '#ffd54f' : '#ffc107';
+const colorBg = isDark ? '#23272b' : '#fff';
+const colorText = isDark ? '#fff' : '#23272b';
+
+// Graphique à barres
+(function() {
+    const barChartCtx = document.getElementById('barChart').getContext('2d');
+    new Chart(barChartCtx, {
+        type: 'bar',
+        data: {
+            labels: mois,
+            datasets: [{
+                label: 'Gains (€)',
+                data: gainsParMois,
+                backgroundColor: (ctx) => {
+                  const gradient = ctx.chart.ctx.createLinearGradient(0, 0, 0, 300);
+                  gradient.addColorStop(0, colorPrimary);
+                  gradient.addColorStop(1, colorSuccess);
+                  return gradient;
+                },
+                borderRadius: 12,
+                borderSkipped: false,
+                borderWidth: 0,
+                barPercentage: 0.7,
+                categoryPercentage: 0.7,
+                shadowOffsetX: 0,
+                shadowOffsetY: 2,
+                shadowBlur: 8,
+                shadowColor: colorPrimary
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: false },
+                tooltip: { backgroundColor: colorBg, titleColor: colorText, bodyColor: colorText }
+            },
+            scales: {
+                x: {
+                  grid: { display: false },
+                  ticks: { color: colorText, font: { weight: 'bold' } }
+                },
+                y: {
+                  grid: { color: isDark ? '#444' : '#e0e0e0' },
+                  ticks: { color: colorText }
+                }
+            },
+            animation: { duration: 1200, easing: 'easeOutQuart' }
+        }
+    });
+})();
+
+// Graphique en ligne
+(function() {
+    const lineChartCtx = document.getElementById('lineChart').getContext('2d');
+    new Chart(lineChartCtx, {
+        type: 'line',
+        data: {
+            labels: mois,
+            datasets: [{
+                label: 'Nombre de Trades',
+                data: tradesCount,
+                borderColor: colorSuccess,
+                backgroundColor: (ctx) => {
+                  const gradient = ctx.chart.ctx.createLinearGradient(0, 0, 0, 300);
+                  gradient.addColorStop(0, colorSuccess);
+                  gradient.addColorStop(1, colorPrimary);
+                  return gradient;
+                },
+                fill: true,
+                tension: 0.35,
+                pointBackgroundColor: colorWarning,
+                pointRadius: 6,
+                pointHoverRadius: 10,
+                pointBorderWidth: 2,
+                pointBorderColor: colorBg
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: false },
+                tooltip: { backgroundColor: colorBg, titleColor: colorText, bodyColor: colorText }
+            },
+            scales: {
+                x: {
+                  grid: { display: false },
+                  ticks: { color: colorText, font: { weight: 'bold' } }
+                },
+                y: {
+                  grid: { color: isDark ? '#444' : '#e0e0e0' },
+                  ticks: { color: colorText }
+                }
+            },
+            animation: { duration: 1200, easing: 'easeOutQuart' }
+        }
+    });
+})();
+
+// Graphique en camembert
+(function() {
+    const pieChartCtx = document.getElementById('pieChart').getContext('2d');
+    new Chart(pieChartCtx, {
+        type: 'pie',
+        data: {
+            labels: ['Profit', 'Perte'],
+            datasets: [{
+                data: [totalProfit, totalLoss],
+                backgroundColor: [colorSuccess, colorDanger],
+                borderColor: colorBg,
+                borderWidth: 3
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: true, labels: { color: colorText, font: { weight: 'bold' } } },
+                tooltip: { backgroundColor: colorBg, titleColor: colorText, bodyColor: colorText }
+            },
+            animation: { duration: 1200, easing: 'easeOutQuart' }
+        }
+    });
+})();
+
+// Graphique radar
+(function() {
+    const radarChartCtx = document.getElementById('radarChart').getContext('2d');
+    new Chart(radarChartCtx, {
+        type: 'radar',
+        data: {
+            labels: ['Victoires', 'Défaites'],
+            datasets: [{
+                label: 'Ratio Victoires/Défaites',
+                data: [winRate, 100 - winRate],
+                backgroundColor: 'rgba(255, 206, 86, 0.18)',
+                borderColor: colorWarning,
+                borderWidth: 3,
+                pointBackgroundColor: [colorSuccess, colorDanger],
+                pointRadius: 8,
+                pointHoverRadius: 12
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: false },
+                tooltip: { backgroundColor: colorBg, titleColor: colorText, bodyColor: colorText }
+            },
+            scales: {
+                r: {
+                  angleLines: { color: isDark ? '#444' : '#e0e0e0' },
+                  grid: { color: isDark ? '#444' : '#e0e0e0' },
+                  pointLabels: { color: colorText, font: { weight: 'bold' } },
+                  ticks: { color: colorText }
+                }
+            },
+            animation: { duration: 1200, easing: 'easeOutQuart' }
+        }
+    });
+})();
+</script>
+{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+<script src="{{ url_for('static', filename='js/scripts.js') }}"></script>
+{% endblock %}

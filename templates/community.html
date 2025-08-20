@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Communauté - Trading Journal{% endblock %}
+{% block content %}
+<h2>Analyses Partagées avec la Communauté</h2>
+
+<!-- Bouton pour créer un groupe -->
+<div class="mb-4">
+  <a href="{{ url_for('groups') }}" class="btn btn-primary">Gérer les Groupes</a>
+</div>
+
+<!-- Liste des groupes -->
+<h4>Vos Groupes</h4>
+{% if user_groups %}
+  <ul class="list-group">
+    {% for group in user_groups %}
+      <li class="list-group-item">
+        <strong>{{ group.name }}</strong> - {{ group.description }}
+        <a href="{{ url_for('group_detail', group_id=group.id) }}" class="btn btn-sm btn-info float-right">Accéder</a>
+      </li>
+    {% endfor %}
+  </ul>
+{% else %}
+  <p>Vous n'avez créé aucun groupe pour le moment.</p>
+{% endif %}
+
+<!-- Liste des analyses partagées -->
+<h4>Analyses Partagées</h4>
+{% if shares %}
+  <ul class="list-group">
+    {% for share_data in shares %}
+      <li class="list-group-item">
+        <strong>{{ share_data.share.analysis.titre }}</strong> (partagé le {{ share_data.share.date_shared }} par l'utilisateur ID {{ share_data.share.shared_by_user_id }})
+        <a href="{{ url_for('share_detail', share_id=share_data.share.id) }}" class="btn btn-sm btn-info float-right">Voir</a>
+      </li>
+    {% endfor %}
+  </ul>
+{% else %}
+  <p>Aucun partage disponible.</p>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Journal de Réflexion{% endblock %}
+{% block content %}
+<h2>Journal de Réflexion</h2>
+
+<form method="POST">
+  <div class="form-group">
+    <label for="emotions">Émotions (avant/pendant/après)</label>
+    <input type="text" class="form-control" id="emotions" name="emotions" placeholder="Exemple : stressé, confiant, soulagé">
+  </div>
+  <div class="form-group">
+    <label for="notes">Notes</label>
+    <textarea class="form-control" id="notes" name="notes" rows="3" placeholder="Ajoutez vos réflexions ici..."></textarea>
+  </div>
+  <div class="form-group">
+    <label for="lessons_learned">Leçons Apprises</label>
+    <textarea class="form-control" id="lessons_learned" name="lessons_learned" rows="3" placeholder="Qu'avez-vous appris de cette expérience ?"></textarea>
+  </div>
+  <div class="form-group">
+    <label for="trade_id">Associer à un Trade (optionnel)</label>
+    <select class="form-control" id="trade_id" name="trade_id">
+      <option value="">Aucun</option>
+      {% for trade in trades %}
+      <option value="{{ trade.id }}">Trade n°{{ trade.id }} - {{ trade.instrument }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <button type="submit" class="btn btn-primary">Ajouter</button>
+</form>
+
+<hr>
+<h3>Entrées de Réflexion</h3>
+{% if entries %}
+  <ul class="list-group">
+    {% for entry in entries %}
+    <li class="list-group-item">
+      <a href="{{ url_for('reflection_detail', reflection_id=entry.id) }}">
+        {{ entry.date.strftime('%Y-%m-%d %H:%M') }} - {{ entry.emotions or 'Sans titre' }}
+      </a>
+      <form action="{{ url_for('delete_reflection', reflection_id=entry.id) }}" method="POST" style="display:inline;">
+        <button type="submit" class="btn btn-danger btn-sm float-right" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette entrée ?');">Supprimer</button>
+      </form>
+    </li>
+    {% endfor %}
+  </ul>
+{% else %}
+  <p>Aucune entrée de réflexion pour le moment.</p>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,11 @@
+# Nouveau fichier pour gérer les tags personnalisables
+{% extends "base.html" %}
+{% block title %}Gestion des Tags{% endblock %}
+{% block content %}
+<h2>Gestion des Tags</h2>
+<ul>
+    {% for tag, data in trades_by_tag.items() %}
+    <li>{{ tag }}: {{ data['count'] }} trades, Total: {{ data['total_result'] }}, Win Rate: {{ data['win_rate'] }}%</li>
+    {% endfor %}
+</ul>
+{% endblock %}

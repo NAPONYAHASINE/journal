@@ -1,0 +1,569 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="group-chat-container chat-responsive">
+    <div class="group-header">
+        <div class="group-title clickable-title" id="group-title-clickable"><strong>{{ group.name }}</strong></div>
+        <!-- Description déplacée dans le modal -->
+    </div>
+    <div class="group-members-modal" id="group-members-modal" style="display:none;">
+        <div class="modal-content modern-modal">
+            <button class="close-modal-btn" id="close-members-modal" title="Fermer">&times;</button>
+            <h3 class="modal-group-title">{{ group.name }}</h3>
+            <div class="modal-group-description">{{ group.description }}</div>
+            <ul class="modern-member-list">
+                {% for member in members %}
+                <li>
+                    <span class="avatar-circle">{{ member.user.prenom[0]|upper }}</span>
+                    <span class="member-name">{{ member.user.prenom }} {{ member.user.nom }}</span>
+                    {% if group.owner_id == session['user_id'] or member.user_id == session['user_id'] %}
+                        <form method="POST" action="{{ url_for('remove_member', group_id=group.id, user_id=member.user_id) }}" class="inline-form">
+                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Retirer ce membre du groupe ?');">Supprimer</button>
+                        </form>
+                    {% endif %}
+                </li>
+                {% endfor %}
+            </ul>
+            <form method="POST" action="{{ url_for('add_member', group_id=group.id) }}" class="add-member-form modern-add-member-form">
+                <input type="email" id="email" name="email" placeholder="Email du membre..." required>
+                <button type="submit" class="btn btn-secondary">Ajouter</button>
+            </form>
+        </div>
+    </div>
+    <div class="chat-box modern-chat-box chat-box-responsive">
+        <div class="messages modern-messages messages-responsive">
+            {% for message in messages %}
+            <div class="message {{ 'sent' if message.user_id == session['user_id'] else 'received' }} modern-message message-responsive {{ 'sent-message' if message.user_id == session['user_id'] else 'received-message' }}">
+                <div class="message-header">
+                    <span class="avatar-circle">{{ message.user.prenom[0]|upper }}</span>
+                    <strong class="message-author">{{ message.user.prenom }}</strong>
+                    <span class="timestamp">{{ message.date_creation.strftime('%H:%M') }}</span>
+                </div>
+                <div class="message-content">
+                    {% if message.content %}
+                    <p>{{ message.content }}</p>
+                    {% endif %}
+                    {% if message.media %}
+                    <div class="media">
+                        {% if message.media.endswith(('.png', '.jpg', '.jpeg', '.gif')) %}
+                        <img src="{{ url_for('uploaded_file', filename=message.media) }}" alt="Image">
+                        {% elif message.media.endswith(('.mp4', '.webm', '.ogg')) %}
+                        <video controls>
+                            <source src="{{ url_for('uploaded_file', filename=message.media) }}" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                        {% elif message.media.endswith(('.mp3', '.wav', '.ogg', '.webm')) %}
+                        <audio controls>
+                            <source src="{{ url_for('uploaded_file', filename=message.media) }}" type="audio/webm">
+                            Your browser does not support the audio tag.
+                        </audio>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <form id="group-message-form" method="POST" action="{{ url_for('group_detail', group_id=group.id) }}" enctype="multipart/form-data" class="modern-message-form message-form-responsive">
+            <textarea name="content" placeholder="Écrivez un message..." rows="2"></textarea>
+            <label for="media-input" class="visually-hidden">Fichier média</label>
+            <input type="file" id="media-input" name="media" accept="image/*,video/*,audio/*" placeholder="Ajouter un fichier média">
+            <button type="button" id="media-btn" class="btn btn-secondary" title="Joindre un fichier"><i class="fa fa-paperclip"></i></button>
+            <button type="button" id="record-btn" class="btn btn-warning" title="Enregistrer un message vocal"><i class="fa fa-microphone"></i></button>
+            <button type="submit" class="btn btn-primary">Envoyer</button>
+        </form>
+        <div id="audio-preview"></div>
+    </div>
+</div>
+
+<script>
+// Modal ouverture/fermeture améliorée
+const groupTitle = document.getElementById('group-title-clickable');
+const membersModal = document.getElementById('group-members-modal');
+const closeMembersModal = document.getElementById('close-members-modal');
+
+function openModal() {
+    membersModal.style.display = 'flex';
+    setTimeout(() => membersModal.classList.add('show'), 10);
+}
+function closeModal() {
+    membersModal.classList.remove('show');
+    setTimeout(() => membersModal.style.display = 'none', 200);
+}
+groupTitle.addEventListener('click', openModal);
+closeMembersModal.addEventListener('click', closeModal);
+membersModal.addEventListener('click', function(e) {
+    if (e.target === membersModal) closeModal();
+});
+
+// Bouton pour ouvrir le sélecteur de fichiers
+const mediaBtn = document.getElementById('media-btn');
+const mediaInput = document.getElementById('media-input');
+mediaBtn.addEventListener('click', function(e) {
+    e.preventDefault();
+    mediaInput.click();
+});
+
+// Enregistrement vocal
+let mediaRecorder;
+let audioChunks = [];
+const recordBtn = document.getElementById('record-btn');
+const audioPreview = document.getElementById('audio-preview');
+const form = document.getElementById('group-message-form');
+
+recordBtn.addEventListener('click', async function(e) {
+    e.preventDefault();
+    if (mediaRecorder && mediaRecorder.state === 'recording') {
+        mediaRecorder.stop();
+        recordBtn.classList.remove('recording');
+        recordBtn.innerHTML = '<i class="fa fa-microphone"></i>';
+        return;
+    }
+    if (!navigator.mediaDevices) {
+        alert('L\'enregistrement audio n\'est pas supporté sur ce navigateur.');
+        return;
+    }
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(stream);
+        audioChunks = [];
+        mediaRecorder.ondataavailable = e => {
+            if (e.data.size > 0) audioChunks.push(e.data);
+        };
+        mediaRecorder.onstop = () => {
+            const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+            const audioUrl = URL.createObjectURL(audioBlob);
+            audioPreview.innerHTML = `<audio controls src="${audioUrl}"></audio>`;
+            audioPreview.style.display = 'block';
+            // Crée un fichier virtuel pour l'input file
+            const file = new File([audioBlob], 'message_vocal.webm', { type: 'audio/webm' });
+            // Remplace le champ file par le blob audio
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+            mediaInput.files = dataTransfer.files;
+        };
+        mediaRecorder.start();
+        recordBtn.classList.add('recording');
+        recordBtn.innerHTML = '<i class="fa fa-stop"></i>';
+    } catch (err) {
+        alert('Impossible d\'accéder au micro.');
+    }
+});
+</script>
+
+<style>
+.chat-responsive {
+    max-width: 100vw;
+    min-height: 80vh;
+    margin: 0 auto;
+    background: #f4f7fa;
+    border-radius: 0;
+    box-shadow: none;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding-bottom: 0;
+}
+.chat-box-responsive {
+    background: #f4f7fa !important;
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    min-height: 0;
+    padding-bottom: 0;
+}
+.messages-responsive {
+    background: #f4f7fa !important;
+    flex: 1 1 auto;
+    min-height: 0;
+    max-height: 60vh;
+    overflow-y: auto;
+    padding-bottom: 0.5rem;
+    margin-bottom: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+}
+.message-responsive {
+    border-radius: 18px;
+    margin-bottom: 0.5rem;
+    box-shadow: 0 2px 8px #b3c6ff22;
+    font-size: 1.08rem;
+    padding: 10px 16px 10px 16px;
+    word-break: break-word;
+    max-width: 85vw;
+    min-width: 60px;
+}
+.sent-message {
+    align-self: flex-end;
+    background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%) !important;
+    color: #fff !important;
+    box-shadow: 0 2px 12px #6a11cb22;
+}
+.received-message {
+    align-self: flex-start;
+    background: #f1f8e9 !important;
+    color: #33691e !important;
+    border: 1.5px solid #b2dfdb;
+    box-shadow: 0 2px 8px #b2dfdb33;
+}
+.message-form-responsive {
+    background: #fff !important;
+    border-radius: 0 0 18px 18px;
+    box-shadow: 0 -2px 12px #b3c6ff22;
+    margin-bottom: 0;
+    padding: 10px 8px 10px 8px;
+    position: sticky;
+    bottom: 0;
+    z-index: 10;
+}
+.message-form-responsive textarea {
+    background: #f4f7fa !important;
+    color: #23272b !important;
+    font-size: 1.08rem;
+    border-radius: 10px;
+    border: 1.5px solid #e3f2fd;
+}
+@media (max-width: 700px) {
+    .chat-responsive, .chat-box-responsive, .messages-responsive, .message-form-responsive {
+        max-width: 100vw !important;
+        border-radius: 0 !important;
+        padding: 0 1vw !important;
+    }
+    .messages-responsive {
+        max-height: 45vh !important;
+    }
+    .message-responsive {
+        font-size: 0.98rem;
+        padding: 8px 7px 8px 10px;
+        max-width: 98vw;
+    }
+    .message-form-responsive textarea {
+        font-size: 0.98rem;
+    }
+}
+/* Responsive adaptation for chat */
+.group-chat-container, .chat-box, .modern-messages, .modern-message-form {
+    max-width: 100vw;
+    box-sizing: border-box;
+}
+@media (max-width: 700px) {
+    .group-chat-container, .chat-box, .modern-messages, .modern-message-form {
+        padding: 0 2vw !important;
+        border-radius: 0 !important;
+        max-width: 100vw !important;
+    }
+    .modern-message-form textarea {
+        font-size: 1rem;
+    }
+    .modern-messages {
+        max-height: 220px !important;
+    }
+}
+/* MODERN MODAL */
+.group-members-modal {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(24,26,32,0.75);
+    -webkit-backdrop-filter: blur(6px) saturate(120%);
+    backdrop-filter: blur(6px) saturate(120%);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    transition: background 0.2s;
+}
+.group-members-modal.show {
+    background: rgba(24,26,32,0.92);
+    animation: modalFadeIn 0.22s cubic-bezier(.4,0,.2,1);
+}
+@keyframes modalFadeIn {
+    from { opacity: 0; transform: scale(0.98); }
+    to { opacity: 1; transform: scale(1); }
+}
+.modal-content.modern-modal {
+    background: #23272b;
+    border-radius: 18px;
+    box-shadow: 0 8px 32px #00000033;
+    padding: 36px 32px 28px 32px;
+    color: #fff;
+    min-width: 340px;
+    max-width: 95vw;
+    position: relative;
+    animation: modalContentPop 0.25s cubic-bezier(.4,0,.2,1);
+}
+@keyframes modalContentPop {
+    from { opacity: 0; transform: translateY(30px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.close-modal-btn {
+    position: absolute;
+    top: 16px; right: 18px;
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 2rem;
+    cursor: pointer;
+    transition: color 0.18s;
+    z-index: 2;
+}
+.close-modal-btn:hover { color: #00c6ff; }
+.modern-member-list {
+    list-style: none;
+    padding: 0;
+    margin-bottom: 18px;
+}
+.modern-member-list li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+    background: #181a20;
+    border-radius: 8px;
+    padding: 7px 12px;
+    box-shadow: 0 1px 4px #00000011;
+}
+.avatar-circle {
+    width: 32px; height: 32px;
+    background: linear-gradient(135deg, #00c6ff 0%, #0072ff 100%);
+    color: #fff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.1rem;
+    margin-right: 6px;
+    box-shadow: 0 2px 8px #0002;
+}
+.member-name {
+    flex: 1;
+    font-weight: 500;
+    color: #fff;
+}
+.modern-add-member-form {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+}
+.modern-add-member-form input[type="email"] {
+    border-radius: 8px;
+    border: 1px solid #444;
+    padding: 8px 12px;
+    background: #181a20;
+    color: #fff;
+    font-size: 1rem;
+    flex: 1;
+}
+.modern-add-member-form button {
+    border-radius: 8px;
+    font-weight: 600;
+}
+
+/* MODERN CHAT */
+.modern-chat-box {
+    background: #23272b;
+    border-radius: 0 0 18px 18px;
+    box-shadow: 0 2px 8px #00000011;
+    padding: 18px 24px 0 24px;
+}
+.modern-messages {
+    max-height: 400px;
+    overflow-y: auto;
+    margin-bottom: 10px;
+    padding-right: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.modern-message {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 0;
+    padding: 12px 18px 10px 18px;
+    border-radius: 18px;
+    max-width: 75%;
+    word-break: break-word;
+    box-shadow: 0 2px 8px #00000011;
+    position: relative;
+    opacity: 0;
+    animation: chatPopIn 0.32s cubic-bezier(.4,0,.2,1) forwards;
+}
+@keyframes chatPopIn {
+    from { opacity: 0; transform: translateY(20px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.modern-message.sent {
+    align-self: flex-end;
+    background: linear-gradient(135deg, #00c6ff 0%, #0072ff 100%);
+    color: #fff;
+    border-bottom-right-radius: 6px;
+}
+.modern-message.received {
+    align-self: flex-start;
+    background: #181a20;
+    color: #fff;
+    border-bottom-left-radius: 6px;
+    border: 1px solid #23272b;
+}
+.modern-message .message-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 2px;
+}
+.modern-message .message-author {
+    font-weight: 600;
+    color: #fff;
+    font-size: 1.05rem;
+}
+.modern-message .timestamp {
+    font-size: 0.85em;
+    color: #b0b3b8;
+    margin-left: auto;
+    font-weight: 400;
+}
+.modern-message .message-content p {
+    margin: 0;
+    color: #e9ecef;
+    font-size: 1.04rem;
+}
+.modern-message .media img,
+.modern-message .media video,
+.modern-message .media audio {
+    max-width: 100%;
+    border-radius: 8px;
+    margin-top: 7px;
+    background: #23272b;
+}
+.modern-message:hover {
+    box-shadow: 0 4px 16px #00c6ff22;
+    background: #1a1d23;
+    transition: box-shadow 0.18s, background 0.18s;
+}
+
+/* Styles supplémentaires */
+.group-header {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 18px;
+    margin-bottom: 18px;
+}
+.group-title.clickable-title {
+    font-size: 1.45rem;
+    font-weight: 800;
+    color: #00c6ff;
+    cursor: pointer;
+    padding: 6px 18px 6px 0;
+    border-radius: 8px;
+    transition: background 0.18s, color 0.18s, box-shadow 0.18s;
+    box-shadow: 0 2px 8px #00c6ff22;
+    text-shadow: 0 2px 8px #00c6ff33;
+    border-bottom: 2.5px solid #00c6ff;
+}
+.group-title.clickable-title:hover {
+    background: #181a20;
+    color: #fff;
+    box-shadow: 0 4px 16px #00c6ff44;
+}
+
+/* Description dans le modal */
+.modal-group-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #00c6ff;
+    margin-bottom: 4px;
+    text-align: center;
+}
+.modal-group-description {
+    color: #b0b3b8;
+    font-size: 1.05rem;
+    margin-bottom: 18px;
+    text-align: center;
+}
+
+/* Boîte de saisie de message modernisée */
+.modern-message-form {
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+    background: #181a20;
+    border-radius: 14px;
+    box-shadow: 0 2px 8px #00000022;
+    padding: 14px 14px 14px 18px;
+    margin-top: 8px;
+}
+.modern-message-form textarea {
+    flex: 1;
+    min-height: 44px;
+    max-height: 120px;
+    border-radius: 10px;
+    border: 1.5px solid #23272b;
+    background: #23272b;
+    color: #fff;
+    font-size: 1.08rem;
+    padding: 10px 14px;
+    resize: vertical;
+    box-shadow: 0 1px 4px #00000011;
+    transition: border 0.18s, box-shadow 0.18s;
+}
+.modern-message-form textarea:focus {
+    border: 1.5px solid #00c6ff;
+    outline: none;
+    box-shadow: 0 2px 8px #00c6ff22;
+}
+.modern-message-form input[type="file"] {
+    display: none;
+}
+.modern-message-form button {
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 1.08rem;
+    padding: 8px 12px;
+    margin: 0;
+}
+#media-btn, #record-btn {
+    font-size: 1.2rem;
+    padding: 8px 10px;
+    background: #23272b;
+    color: #00c6ff;
+    border: none;
+    transition: background 0.18s, color 0.18s;
+}
+#media-btn:hover, #record-btn:hover {
+    background: #00c6ff;
+    color: #fff;
+}
+#record-btn.recording {
+    background: #ff1744;
+    color: #fff;
+    animation: pulse 1s infinite;
+}
+@keyframes pulse {
+    0% { box-shadow: 0 0 0 0 #ff174444; }
+    70% { box-shadow: 0 0 0 10px #ff174400; }
+    100% { box-shadow: 0 0 0 0 #ff174400; }
+}
+
+/* Visually hidden for accessibility */
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0,0,0,0);
+    border: 0;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+    .modal-content.modern-modal { padding: 18px 6vw; }
+    .modern-chat-box { padding: 10px 2vw 0 2vw; }
+    .modern-message { padding: 10px 8px 8px 8px; }
+}
+</style>
+{% endblock %}

@@ -1,0 +1,194 @@
+{% extends "base.html" %}
+{% block title %}Accueil - NGA|BLOOM-HUB{% endblock %}
+{% block content %}
+<!-- SVG bougies de trading animées en fond -->
+<div class="trading-bg-svg" aria-hidden="true">
+  <svg id="candlestick-bg" viewBox="0 0 1440 400" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+    <g id="candles">
+      <!-- Les bougies seront générées dynamiquement en JS -->
+    </g>
+  </svg>
+</div>
+<script>
+(function() {
+  const svg = document.getElementById('candlestick-bg');
+  const g = svg.getElementById('candles');
+  const candleCount = 40;
+  const candleWidth = 18;
+  const candleGap = 18;
+  const minY = 80, maxY = 320, minBody = 30, maxBody = 120;
+  let candles = [];
+  // Génère des bougies aléatoires (rouge/vert, taille, position)
+  for (let i = 0; i < candleCount; i++) {
+    let isBull = Math.random() > 0.5;
+    let bodyHeight = minBody + Math.random() * (maxBody - minBody);
+    let wickTop = minY + Math.random() * (maxY - minY - bodyHeight);
+    let wickBottom = wickTop + bodyHeight;
+    let open = isBull ? wickBottom - Math.random() * (bodyHeight * 0.7) : wickTop + Math.random() * (bodyHeight * 0.7);
+    let close = isBull ? wickTop + Math.random() * (bodyHeight * 0.7) : wickBottom - Math.random() * (bodyHeight * 0.7);
+    let color = isBull ? '#28a745' : '#dc3545';
+    let x = 60 + i * (candleWidth + candleGap);
+    candles.push({x, wickTop, wickBottom, open, close, color, isBull});
+  }
+  function drawCandles(offset) {
+    g.innerHTML = '';
+    for (let i = 0; i < candles.length; i++) {
+      let c = candles[i];
+      let cx = c.x - offset;
+      if (cx < -candleWidth) continue;
+      if (cx > 1440) continue;
+      // Wick
+      let wick = document.createElementNS('http://www.w3.org/2000/svg','rect');
+      wick.setAttribute('x', cx + candleWidth/2 - 1.5);
+      wick.setAttribute('y', c.wickTop);
+      wick.setAttribute('width', 3);
+      wick.setAttribute('height', c.wickBottom - c.wickTop);
+      wick.setAttribute('fill', '#888');
+      wick.setAttribute('opacity', '0.5');
+      g.appendChild(wick);
+      // Body
+      let bodyY = Math.min(c.open, c.close);
+      let bodyH = Math.abs(c.open - c.close);
+      let body = document.createElementNS('http://www.w3.org/2000/svg','rect');
+      body.setAttribute('x', cx);
+      body.setAttribute('y', bodyY);
+      body.setAttribute('width', candleWidth);
+      body.setAttribute('height', Math.max(8, bodyH));
+      body.setAttribute('rx', 4);
+      body.setAttribute('fill', c.color);
+      body.setAttribute('opacity', '0.7');
+      g.appendChild(body);
+    }
+  }
+  // Animation: défilement horizontal
+  let t0 = Date.now();
+  function animate() {
+    let t = (Date.now() - t0) / 1000;
+    let offset = (t * 40) % ((candleWidth + candleGap) * candleCount);
+    drawCandles(offset);
+    requestAnimationFrame(animate);
+  }
+  animate();
+})();
+</script>
+
+<div class="text-center mb-4">
+    <h1 class="display-4 main-title-responsive">NGA|BLOOM-HUB</h1>
+</div>
+
+<div class="row text-center mb-5">
+    {% if stats %}
+        <div class="col-md-3">
+            <div class="chart-container">
+                <canvas id="chartTotalTrades" class="chart"></canvas>
+                <div class="circle">
+                    <div class="circle-content">
+                        <span>{{ stats.total_trades }}</span>
+                    </div>
+                    <p>Total Trades</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="chart-container">
+                <canvas id="chartTotalGains" class="chart"></canvas>
+                <div class="circle">
+                    <div class="circle-content">
+                        <span>{{ stats.total_gains }}</span>
+                    </div>
+                    <p>Total Gains (€)</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="chart-container">
+                <canvas id="chartTotalLosses" class="chart"></canvas>
+                <div class="circle">
+                    <div class="circle-content">
+                        <span>{{ stats.total_losses }}</span>
+                    </div>
+                    <p>Total Losses (€)</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="chart-container">
+                <canvas id="chartWinRate" class="chart"></canvas>
+                <div class="circle">
+                    <div class="circle-content">
+                        <span>{{ stats.win_rate }}%</span>
+                    </div>
+                    <p>Win Rate (%)</p>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <p>Aucune statistique disponible.</p>
+    {% endif %}
+</div>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Vos Journaux de Trading</h2>
+    <a href="{{ url_for('create_journal') }}" class="btn btn-success">Créer un Journal</a>
+</div>
+
+<div class="row">
+  {% if journals %}
+    {% for journal in journals %}
+      <div class="col-md-4">
+        <div class="card card-journal mb-3 {% if session.get('theme') == 'dark' %}dark-theme{% endif %}">
+          <div class="card-body">
+            <h5 class="card-title">{{ journal.nom }}</h5>
+            <p class="card-text">Capital : {{ journal.capital_initial }} {{ journal.devise }}</p>
+            <a href="{{ url_for('dashboard', journal_id=journal.id) }}" class="btn btn-primary btn-sm">Dashboard</a>
+            <a href="{{ url_for('trades', journal_id=journal.id) }}" class="btn btn-info btn-sm">Trades</a>
+            <a href="{{ url_for('analyses', journal_id=journal.id) }}" class="btn btn-warning btn-sm">Analyses</a>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  {% else %}
+    <p>Aucun journal trouvé.</p>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    {% if stats %}
+        const totalTrades = {{ stats.total_trades }};
+        const totalGains = {{ stats.total_gains }};
+        const totalLosses = {{ stats.total_losses }};
+        const winRate = {{ stats.win_rate }};
+
+        const createChart = (ctx, value, label, color) => {
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: [label, ''],
+                    datasets: [{
+                        data: [value, 100 - value],
+                        backgroundColor: [color, '#e0e0e0'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    cutout: '70%',
+                    plugins: {
+                        tooltip: { enabled: false },
+                        legend: { display: false }
+                    }
+                }
+            });
+        };
+
+        createChart(document.getElementById('chartTotalTrades').getContext('2d'), totalTrades, 'Trades', 'green');
+        createChart(document.getElementById('chartTotalGains').getContext('2d'), totalGains, 'Gains', 'green');
+        createChart(document.getElementById('chartTotalLosses').getContext('2d'), totalLosses, 'Losses', 'red');
+        createChart(document.getElementById('chartWinRate').getContext('2d'), winRate, 'Win Rate', 'green');
+    {% endif %}
+});
+</script>
+{% endblock %}

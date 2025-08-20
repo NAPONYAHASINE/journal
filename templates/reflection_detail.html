@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Détails de la Réflexion{% endblock %}
+{% block content %}
+<h2>Détails de la Réflexion</h2>
+<p><strong>Date :</strong> {{ entry.date.strftime('%Y-%m-%d %H:%M') }}</p>
+<p><strong>Émotions :</strong> {{ entry.emotions }}</p>
+<p><strong>Notes :</strong></p>
+<p>{{ entry.notes }}</p>
+<p><strong>Leçons Apprises :</strong></p>
+<p>{{ entry.lessons_learned }}</p>
+{% if entry.trade_id %}
+<p><strong>Lié au Trade :</strong> <a href="{{ url_for('trade_detail', trade_id=entry.trade_id) }}">Trade n°{{ entry.trade_id }}</a></p>
+{% endif %}
+<a href="{{ url_for('reflections') }}" class="btn btn-secondary">Retour</a>
+{% endblock %}

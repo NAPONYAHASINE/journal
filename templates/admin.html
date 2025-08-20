@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block title %}Espace Administrateur - Trading Journal{% endblock %}
+{% block content %}
+<h2>Gestion des Utilisateurs</h2>
+<div class="admin-table-wrapper">
+  <table class="table table-bordered admin-table-responsive d-none d-md-table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Nom</th>
+        <th>Email</th>
+        <th>Rôle</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for user in users %}
+        <tr>
+          <td>{{ user.id }}</td>
+          <td>{{ user.prenom }} {{ user.nom }}</td>
+          <td>{{ user.email }}</td>
+          <td>{% if user.is_admin %}Administrateur{% else %}Utilisateur{% endif %}</td>
+          <td>
+            <a href="{{ url_for('edit_user', user_id=user.id) }}" class="btn btn-sm btn-primary">Modifier</a>
+            <form method="post" action="{{ url_for('delete_user', user_id=user.id) }}" style="display:inline;">
+              <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Supprimer ce compte et toutes ses données ?');">Supprimer</button>
+            </form>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <!-- Version mobile : cartes -->
+  <div class="admin-user-cards d-md-none">
+    {% for user in users %}
+      <div class="admin-user-card">
+        <div class="admin-user-row"><span class="admin-label">ID :</span> <span>{{ user.id }}</span></div>
+        <div class="admin-user-row"><span class="admin-label">Nom :</span> <span>{{ user.prenom }} {{ user.nom }}</span></div>
+        <div class="admin-user-row"><span class="admin-label">Email :</span> <span>{{ user.email }}</span></div>
+        <div class="admin-user-row"><span class="admin-label">Rôle :</span> <span>{% if user.is_admin %}Administrateur{% else %}Utilisateur{% endif %}</span></div>
+        <div class="admin-user-row">
+          <a href="{{ url_for('edit_user', user_id=user.id) }}" class="btn btn-primary btn-block">Modifier</a>
+          <form method="post" action="{{ url_for('delete_user', user_id=user.id) }}" class="d-inline-block mt-2">
+            <button type="submit" class="btn btn-danger btn-block" onclick="return confirm('Supprimer ce compte et toutes ses données ?');">Supprimer</button>
+          </form>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+<style>
+/* Desktop: masquer les cartes, mobile: masquer la table */
+.d-none { display: none !important; }
+.d-md-table { display: table !important; }
+.d-md-none { display: none !important; }
+@media (max-width: 768px) {
+  .d-md-table { display: none !important; }
+  .d-md-none { display: block !important; }
+}
+.admin-user-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+  margin-top: 1.2rem;
+}
+.admin-user-card {
+  background: #23272b;
+  color: #fff;
+  border-radius: 14px;
+  box-shadow: 0 2px 12px #0002;
+  padding: 1.1rem 1.2rem 0.8rem 1.2rem;
+  margin-bottom: 0.2rem;
+}
+body:not(.dark-theme) .admin-user-card {
+  background: #f8f9fa;
+  color: #23272b;
+}
+.admin-user-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5em;
+  font-size: 1.07em;
+}
+.admin-label {
+  font-weight: 600;
+  color: #00c6ff;
+  min-width: 70px;
+  display: inline-block;
+}
+.admin-user-card .btn {
+  width: 100%;
+  margin-top: 0.7em;
+  font-size: 1.08em;
+  border-radius: 8px;
+}
+</style>
+{% endblock %}

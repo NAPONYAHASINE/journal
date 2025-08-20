@@ -1,0 +1,85 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm py-3 sticky-top custom-navbar">
+  <div class="container-fluid px-3 position-relative">
+    <a class="navbar-brand d-flex align-items-center" href="{{ url_for('home') }}">
+      <i class="fas fa-chart-line mr-2"></i>
+      <span class="brand-title">{{ site_name }}</span>
+    </a>
+    <button class="navbar-toggler" type="button" id="mobileMenuBtn" aria-label="Ouvrir le menu">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <!-- Overlay menu for mobile -->
+    <div class="navbar-overlay" id="navbarOverlay">
+      <div class="navbar-overlay-content">
+        <button class="close-overlay" id="closeOverlayBtn" aria-label="Fermer le menu">&times;</button>
+        <ul class="navbar-nav flex-row flex-wrap justify-content-center align-items-center mt-4">
+          {% if session.get('user_id') %}
+          <li class="nav-item mx-2 my-2"><a class="nav-link d-flex flex-column align-items-center" href="{{ url_for('performance_ranking') }}"><i class="fas fa-trophy fa-lg mb-1"></i><span class="small">Classement</span></a></li>
+          <li class="nav-item mx-2 my-2"><a class="nav-link d-flex flex-column align-items-center" href="{{ url_for('community') }}"><i class="fas fa-users fa-lg mb-1"></i><span class="small">Communauté</span></a></li>
+          <li class="nav-item mx-2 my-2"><a class="nav-link d-flex flex-column align-items-center" href="{{ url_for('strategies') }}"><i class="fas fa-lightbulb fa-lg mb-1"></i><span class="small">Stratégies</span></a></li>
+          <li class="nav-item mx-2 my-2"><a class="nav-link d-flex flex-column align-items-center" href="{{ url_for('assistance') }}"><i class="fas fa-question-circle fa-lg mb-1"></i><span class="small">Assistance</span></a></li>
+          <li class="nav-item mx-2 my-2"><a class="nav-link d-flex flex-column align-items-center" href="{{ url_for('info') }}"><i class="fas fa-info-circle fa-lg mb-1"></i><span class="small">Info</span></a></li>
+          <li class="nav-item mx-2 my-2"><a class="nav-link d-flex flex-column align-items-center" href="{{ url_for('parametres') }}" title="Paramètres"><i class="fas fa-cog fa-lg mb-1"></i><span class="small">Paramètres</span></a></li>
+          <li class="nav-item mx-2 my-2"><a class="nav-link d-flex flex-column align-items-center" href="{{ url_for('my_shares') }}"><i class="fas fa-share-alt fa-lg mb-1"></i><span class="small">Partages</span></a></li>
+          <li class="nav-item mx-2 my-2"><a class="nav-link d-flex flex-column align-items-center" href="{{ url_for('calendar') }}"><i class="fas fa-calendar-alt fa-lg mb-1"></i><span class="small">Calendrier</span></a></li>
+          <li class="nav-item mx-2 my-2"><a class="nav-link d-flex flex-column align-items-center" href="{{ url_for('academy') }}"><i class="fas fa-graduation-cap fa-lg mb-1"></i><span class="small">Academy</span></a></li>
+          {% if session.get('is_admin') %}
+          <li class="nav-item mx-2 my-2"><a class="nav-link d-flex flex-column align-items-center" href="{{ url_for('admin') }}"><i class="fas fa-user-shield fa-lg mb-1"></i><span class="small">Admin</span></a></li>
+          <li class="nav-item mx-2 my-2"><a class="nav-link d-flex flex-column align-items-center" href="{{ url_for('admin_assistance') }}"><i class="fas fa-headset fa-lg mb-1"></i><span class="small">Ass. Admin</span></a></li>
+          {% endif %}
+          <li class="nav-item mx-2 my-2"><a class="nav-link d-flex flex-column align-items-center text-danger font-weight-bold" href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt fa-lg mb-1"></i><span class="small">Déconnexion</span></a></li>
+          {% else %}
+          <li class="nav-item mx-2 my-2"><a class="nav-link d-flex flex-column align-items-center" href="{{ url_for('login') }}"><i class="fas fa-sign-in-alt fa-lg mb-1"></i><span class="small">Connexion</span></a></li>
+          <li class="nav-item mx-2 my-2"><a class="nav-link d-flex flex-column align-items-center" href="{{ url_for('register') }}"><i class="fas fa-user-plus fa-lg mb-1"></i><span class="small">Inscription</span></a></li>
+          {% endif %}
+        </ul>
+      </div>
+    </div>
+    <!-- Desktop menu -->
+    <div class="collapse navbar-collapse d-none d-lg-flex justify-content-center" id="navbarNav">
+      <ul class="navbar-nav align-items-center">
+        {% if session.get('user_id') %}
+        <li class="nav-item mx-1"><a class="nav-link" href="{{ url_for('performance_ranking') }}"><i class="fas fa-trophy"></i> Classement</a></li>
+        <li class="nav-item mx-1"><a class="nav-link" href="{{ url_for('community') }}"><i class="fas fa-users"></i> Communauté</a></li>
+        <li class="nav-item mx-1"><a class="nav-link" href="{{ url_for('strategies') }}"><i class="fas fa-lightbulb"></i> Stratégies</a></li>
+        <li class="nav-item mx-1"><a class="nav-link" href="{{ url_for('assistance') }}"><i class="fas fa-question-circle"></i> Assistance</a></li>
+        <li class="nav-item mx-1"><a class="nav-link" href="{{ url_for('info') }}"><i class="fas fa-info-circle"></i> Info</a></li>
+        <li class="nav-item mx-1"><a class="nav-link" href="{{ url_for('parametres') }}" title="Paramètres"><i class="fas fa-cog"></i></a></li>
+        <li class="nav-item mx-1"><a class="nav-link" href="{{ url_for('my_shares') }}"><i class="fas fa-share-alt"></i> Mes Partages</a></li>
+        <li class="nav-item mx-1"><a class="nav-link" href="{{ url_for('calendar') }}"><i class="fas fa-calendar-alt"></i> Calendrier</a></li>
+        <li class="nav-item mx-1"><a class="nav-link" href="{{ url_for('academy') }}"><i class="fas fa-graduation-cap"></i> Academy</a></li>
+        {% if session.get('is_admin') %}
+        <li class="nav-item mx-1"><a class="nav-link" href="{{ url_for('admin') }}"><i class="fas fa-user-shield"></i> Admin</a></li>
+        <li class="nav-item mx-1"><a class="nav-link" href="{{ url_for('admin_assistance') }}"><i class="fas fa-headset"></i> Assistance Admin</a></li>
+        {% endif %}
+        <li class="nav-item mx-1"><a class="nav-link text-danger font-weight-bold" href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> Déconnexion</a></li>
+        {% else %}
+        <li class="nav-item mx-1"><a class="nav-link" href="{{ url_for('login') }}"><i class="fas fa-sign-in-alt"></i> Connexion</a></li>
+        <li class="nav-item mx-1"><a class="nav-link" href="{{ url_for('register') }}"><i class="fas fa-user-plus"></i> Inscription</a></li>
+        {% endif %}
+      </ul>
+    </div>
+  </div>
+</nav>
+<script>
+// Navbar overlay menu logic
+(function() {
+  var overlay = document.getElementById('navbarOverlay');
+  var openBtn = document.getElementById('mobileMenuBtn');
+  var closeBtn = document.getElementById('closeOverlayBtn');
+  function openOverlay() {
+    overlay.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeOverlay() {
+    overlay.classList.remove('active');
+    document.body.style.overflow = '';
+  }
+  if (openBtn) openBtn.addEventListener('click', openOverlay);
+  if (closeBtn) closeBtn.addEventListener('click', closeOverlay);
+  // Close overlay on any nav link click
+  var navLinks = overlay.querySelectorAll('.nav-link');
+  navLinks.forEach(function(link) {
+    link.addEventListener('click', closeOverlay);
+  });
+})();
+</script>

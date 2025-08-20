@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Détail du Partage - Trading Journal{% endblock %}
+{% block content %}
+<h2>Analyse Partagée</h2>
+<div class="card mb-3">
+  <div class="card-body">
+    <h5>{{ share.analysis.titre }}</h5>
+    <p>{{ share.analysis.contenu }}</p>
+    {% if share.analysis.image %}
+      <img src="{{ url_for('uploaded_file', filename=share.analysis.image) }}" alt="Image de l'analyse" class="img-fluid">
+    {% endif %}
+    <p><small>Partagé le {{ share.date_shared }}</small></p>
+  </div>
+</div>
+
+<h4>Commentaires</h4>
+{% if share.comments %}
+  {% for c in share.comments %}
+    <div class="card mb-2">
+      <div class="card-body">
+        <p>{{ c.comment }}</p>
+        <small>Envoyé par l'utilisateur ID {{ c.user_id }} le {{ c.date_creation }}</small>
+      </div>
+    </div>
+  {% endfor %}
+{% else %}
+  <p>Aucun commentaire.</p>
+{% endif %}
+
+<hr>
+<form method="POST">
+  <div class="form-group">
+    <label for="comment">Ajouter un commentaire</label>
+    <textarea class="form-control" name="comment" rows="3" required></textarea>
+  </div>
+  <button type="submit" class="btn btn-primary">Envoyer</button>
+</form>
+<a href="{{ url_for('community') }}" class="btn btn-secondary mt-3">Retour</a>
+{% endblock %}

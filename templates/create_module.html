@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Créer un module</h2>
+<form method="POST" enctype="multipart/form-data">
+    <div class="form-group">
+        <label>Nom du module</label>
+        <input type="text" name="nom" class="form-control" required placeholder="Nom du module" title="Nom du module">
+    </div>
+    <div class="form-group">
+        <label>Nombre de cours</label>
+        <input type="number" name="nb_cours" class="form-control" required placeholder="Nombre de cours" title="Nombre de cours">
+    </div>
+    <div class="form-group">
+        <label>Description</label>
+        <textarea name="description" class="form-control" required placeholder="Description du module" title="Description du module"></textarea>
+    </div>
+    <div class="form-group">
+        <label>Compétences acquises</label>
+        <textarea name="competences" class="form-control" required placeholder="Compétences acquises" title="Compétences acquises"></textarea>
+    </div>
+    <div class="form-group">
+        <label>Image (optionnel)</label>
+        <input type="file" name="image" class="form-control" placeholder="Image du module" title="Image du module">
+    </div>
+    <button type="submit" class="btn btn-primary">Créer</button>
+</form>
+{% endblock %}

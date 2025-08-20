@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}Modifier la Publication{% endblock %}
+
+{% block content %}
+<h2>Modifier la Publication</h2>
+<form method="POST" enctype="multipart/form-data">
+    <div class="form-group">
+        <label for="titre">Titre</label>
+        <input id="titre" type="text" class="form-control" name="titre" value="{{ post.titre }}" required>
+    </div>
+    <div class="form-group">
+        <label for="contenu">Contenu</label>
+        <textarea id="contenu" class="form-control" name="contenu" rows="5" required>{{ post.contenu }}</textarea>
+    </div>
+    <div class="form-group">
+        <label for="media">Fichier Média (facultatif)</label>
+        <input id="media" type="file" class="form-control-file" name="media">
+        {% if post.media %}
+        <p>Fichier actuel : <a href="{{ url_for('uploaded_file', filename=post.media) }}" target="_blank">{{ post.media }}</a></p>
+        {% endif %}
+    </div>
+    <button type="submit" class="btn btn-primary">Enregistrer</button>
+    <a href="{{ url_for('info') }}" class="btn btn-secondary">Annuler</a>
+</form>
+{% endblock %}

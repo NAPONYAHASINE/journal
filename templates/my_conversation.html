@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Ma Conversation - Trading Journal{% endblock %}
+{% block content %}
+<h2>Conversation pour : {{ msg.sujet }}</h2>
+<div class="card mb-3">
+  <div class="card-body">
+    <p><strong>Message initial :</strong> {{ msg.message }}</p>
+    <p><strong>Date :</strong> {{ msg.date_creation }}</p>
+  </div>
+</div>
+
+{% if msg.replies %}
+  <h4>Réponses :</h4>
+  {% for reply in msg.replies %}
+    <div class="card mb-2">
+      <div class="card-body">
+        <p>{{ reply.reply_message }}</p>
+        <small>Envoyé le {{ reply.date_creation }} par {{ reply.sender }}</small>
+      </div>
+    </div>
+  {% endfor %}
+{% endif %}
+
+<form method="POST">
+  <div class="form-group">
+    <label for="reply">Votre réponse</label>
+    <textarea class="form-control" name="reply" rows="4" required></textarea>
+  </div>
+  <button type="submit" class="btn btn-primary">Envoyer la réponse</button>
+</form>
+<a href="{{ url_for('assistance') }}" class="btn btn-secondary mt-3">Retour</a>
+{% endblock %}

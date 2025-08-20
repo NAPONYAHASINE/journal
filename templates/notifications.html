@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Notifications{% endblock %}
+{% block content %}
+<h2>Notifications</h2>
+
+{% if notifications %}
+  <ul class="list-group">
+    {% for notification in notifications %}
+    <li class="list-group-item {% if notification.is_read %}list-group-item-secondary{% else %}list-group-item-primary{% endif %}">
+      <p>{{ notification.message }}</p>
+      <small class="text-muted">Reçue le {{ notification.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+      <div class="mt-2">
+        {% if not notification.is_read %}
+        <form action="{{ url_for('mark_notification_read', notification_id=notification.id) }}" method="POST" style="display:inline;">
+          <button type="submit" class="btn btn-success btn-sm">Marquer comme lue</button>
+        </form>
+        {% endif %}
+        <form action="{{ url_for('delete_notification', notification_id=notification.id) }}" method="POST" style="display:inline;">
+          <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette notification ?');">Supprimer</button>
+        </form>
+      </div>
+    </li>
+    {% endfor %}
+  </ul>
+{% else %}
+  <p>Aucune notification pour le moment.</p>
+{% endif %}
+{% endblock %}

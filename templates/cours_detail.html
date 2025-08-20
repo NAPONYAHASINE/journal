@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-body">
+                    {% if cours.fichier and cours.fichier.endswith('.mp4') %}
+                        <video class="w-100 mb-3" controls poster="{{ url_for('static', filename='uploads/' ~ module.image) }}">
+                            <source src="{{ url_for('static', filename='uploads/' ~ cours.fichier) }}" type="video/mp4">
+                            Votre navigateur ne supporte pas la lecture vidéo.
+                        </video>
+                    {% elif cours.fichier and cours.fichier.endswith('.pdf') %}
+                        <embed src="{{ url_for('static', filename='uploads/' ~ cours.fichier) }}" type="application/pdf" width="100%" height="500px" />
+                    {% endif %}
+                    <h2 class="card-title">{{ cours.titre }}</h2>
+                    <p class="card-text">{{ cours.description }}</p>
+                    <p><b>Prix :</b> {{ cours.prix }} €</p>
+                    <p class="text-muted creation-date">Créé le {{ cours.date_creation if cours.date_creation else 'N/A' }}</p>
+                    <div class="d-flex align-items-center mt-3">
+                        <form method="post" action="{{ url_for('like_cours', cours_id=cours.id) }}" class="mr-2">
+                            <button type="submit" class="btn btn-link p-0" title="J'aime">
+                                <i class="fa fa-heart{% if liked %} text-danger{% else %} text-muted{% endif %}" aria-hidden="true"></i>
+                            </button>
+                        </form>
+                        <span>{{ likes_count }} j'aime</span>
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-body">
+                    <h5>Commentaires</h5>
+                    <form method="post" action="{{ url_for('comment_cours', cours_id=cours.id) }}">
+                        <div class="form-group">
+                            <textarea name="commentaire" class="form-control" rows="3" placeholder="Posez votre question ou laissez un commentaire..."></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Envoyer</button>
+                    </form>
+                    <hr>
+                    {% for comment in commentaires %}
+                        <div class="mb-2">
+                            <b>{{ comment.user_name or 'Utilisateur' }}</b> <span class="text-muted creation-date">{{ comment.date_posted }}</span><br>
+                            {{ comment.text }}
+                        </div>
+                    {% else %}
+                        <p class="text-muted">Aucun commentaire pour ce cours.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Modifier le Trade</h2>
+<form method="POST">
+    <label for="date_debut">Date de début :</label>
+    <input type="date" id="date_debut" name="date_debut" value="{{ trade.date_debut.strftime('%Y-%m-%d') }}" required>
+    <label for="heure_debut">Heure de début :</label>
+    <input type="time" id="heure_debut" name="heure_debut" value="{{ trade.date_debut.strftime('%H:%M') }}" required>
+    <label for="session">Session :</label>
+    <input type="text" id="session" name="session" value="{{ trade.session }}" required>
+    <label for="instrument">Instrument :</label>
+    <input type="text" id="instrument" name="instrument" value="{{ trade.instrument }}" required>
+    <label for="position">Position :</label>
+    <select id="position" name="position">
+        <option value="achat" {% if trade.position == "achat" %}selected{% endif %}>Achat</option>
+        <option value="vente" {% if trade.position == "vente" %}selected{% endif %}>Vente</option>
+    </select>
+    <label for="prix_entree">Prix d'entrée :</label>
+    <input type="text" id="prix_entree" name="prix_entree" value="{{ trade.prix_entree }}" required>
+    <label for="lot">Lot :</label>
+    <input type="text" id="lot" name="lot" value="{{ trade.lot }}" required>
+    <label for="risk_reward">Risk/Reward :</label>
+    <input type="text" id="risk_reward" name="risk_reward" value="{{ trade.risk_reward }}" required>
+    <label for="commentaires">Commentaires :</label>
+    <textarea id="commentaires" name="commentaires">{{ trade.commentaires }}</textarea>
+    <label for="date_fin">Date de fin :</label>
+    <input type="date" id="date_fin" name="date_fin" value="{{ trade.date_fin.strftime('%Y-%m-%d') if trade.date_fin else '' }}">
+    <label for="heure_fin">Heure de fin :</label>
+    <input type="time" id="heure_fin" name="heure_fin" value="{{ trade.date_fin.strftime('%H:%M') if trade.date_fin else '' }}">
+    <label for="prix_sortie">Prix de sortie :</label>
+    <input type="text" id="prix_sortie" name="prix_sortie" value="{{ trade.prix_sortie if trade.prix_sortie else '' }}">
+    <button type="submit">Modifier</button>
+</form>
+{% endblock %}

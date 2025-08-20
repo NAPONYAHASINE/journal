@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Paramètres - Trading Journal{% endblock %}
+{% block content %}
+<h2>Paramètres de l'utilisateur</h2>
+
+<div class="mb-4">
+  <h4>Modifier le mot de passe</h4>
+  <form method="POST">
+    <div class="form-group">
+      <label for="new_password">Nouveau mot de passe</label>
+      <input type="password" class="form-control" name="new_password" required>
+    </div>
+    <button type="submit" class="btn btn-primary">Mettre à jour le mot de passe</button>
+  </form>
+</div>
+
+<div>
+  <h4>Modifier le thème</h4>
+  <form method="POST">
+    <div class="form-group">
+      <label for="theme">Choisir le thème</label>
+      <select class="form-control" name="theme" required>
+        <option value="light" {% if session.get('theme', 'light') == 'light' %}selected{% endif %}>Clair</option>
+        <option value="dark" {% if session.get('theme') == 'dark' %}selected{% endif %}>Sombre</option>
+      </select>
+    </div>
+    <button type="submit" class="btn btn-primary">Mettre à jour le thème</button>
+  </form>
+</div>
+{% endblock %}

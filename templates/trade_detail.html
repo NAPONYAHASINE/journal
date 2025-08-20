@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Détail du Trade - Trading Journal{% endblock %}
+{% block content %}
+<h2>Détail du Trade n°{{ numero_ordre }}</h2>
+<ul class="list-group">
+  <li class="list-group-item"><strong>Date de début :</strong> {{ trade.date_debut.strftime('%Y-%m-%d %H:%M') }}</li>
+  <li class="list-group-item"><strong>Date de fin :</strong> {{ trade.date_fin.strftime('%Y-%m-%d %H:%M') if trade.date_fin else "En cours" }}</li>
+  <li class="list-group-item"><strong>Session :</strong> {{ trade.session }}</li>
+  <li class="list-group-item"><strong>Instrument :</strong> {{ trade.instrument }}</li>
+  <li class="list-group-item"><strong>Time Frame utilisé :</strong> {{ trade.time_frame }}</li>
+  <li class="list-group-item"><strong>Position :</strong> {{ trade.position }}</li>
+  <li class="list-group-item"><strong>Prix d'entrée :</strong> {{ trade.prix_entree }}</li>
+  <li class="list-group-item"><strong>Prix de sortie :</strong> {{ trade.prix_sortie if trade.prix_sortie else "Non renseigné" }}</li>
+  <li class="list-group-item"><strong>Lot :</strong> {{ trade.lot }}</li>
+  <li class="list-group-item"><strong>Risk/Reward :</strong> {{ trade.risk_reward }}</li>
+  <li class="list-group-item"><strong>Résultat :</strong> {{ trade.resultat if trade.resultat is not none else "Calcul en attente" }}</li>
+  <li class="list-group-item"><strong>Pourcentage :</strong> {{ '%.2f' % trade.pourcentage if trade.pourcentage is not none else "Calcul en attente" }}%</li>
+  <li class="list-group-item"><strong>Commentaires :</strong> {{ trade.commentaires if trade.commentaires else "Aucun commentaire" }}</li>
+  <li class="list-group-item"><strong>Tags :</strong> {{ trade.tags if trade.tags else "Aucun tag" }}</li>
+  {% if trade.capture %}
+  <li class="list-group-item">
+    <strong>Capture :</strong>
+    <a href="{{ url_for('uploaded_file', filename=trade.capture) }}" target="_blank">
+      <img src="{{ url_for('uploaded_file', filename=trade.capture) }}" alt="Capture" style="max-width: 200px;">
+    </a>
+  </li>
+  {% endif %}
+</ul>
+<hr>
+<h3>Mettre à jour le Trade (Terminer)</h3>
+<form method="POST">
+  <div class="form-row">
+    <div class="form-group col-md-4">
+      <label for="date_fin">Date de fin</label>
+      <input type="date" class="form-control" name="date_fin" required>
+    </div>
+    <div class="form-group col-md-4">
+      <label for="heure_fin">Heure de fin</label>
+      <input type="time" class="form-control" name="heure_fin" required>
+    </div>
+    <div class="form-group col-md-4">
+      <label for="prix_sortie">Prix de sortie</label>
+      <input type="number" step="0.01" class="form-control" name="prix_sortie" required>
+    </div>
+  </div>
+  <button type="submit" class="btn btn-primary">Mettre à jour</button>
+</form>
+<a href="{{ url_for('trades', journal_id=trade.journal_id) }}" class="btn btn-secondary mt-3">Retour aux Trades</a>
+{% endblock %}

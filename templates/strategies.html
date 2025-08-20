@@ -1,0 +1,255 @@
+{% extends "base.html" %}
+{% block title %}Stratégies{% endblock %}
+{% block content %}
+<h2>Stratégies</h2>
+
+<form method="POST">
+  <h4>Créer une Stratégie</h4>
+  <div class="form-group">
+    <label for="name">Nom de la Stratégie</label>
+    <input type="text" class="form-control" id="name" name="name" required>
+  </div>
+  <div class="form-group">
+    <label for="type">Type de Stratégie</label>
+    <select class="form-control" id="type" name="type" required>
+      <option value="Breakout">Breakout</option>
+      <option value="Range">Range</option>
+      <option value="Tendance">Tendance</option>
+      <option value="Contre-tendance">Contre-tendance</option>
+      <option value="Scalping">Scalping</option>
+      <option value="Swing">Swing</option>
+      <option value="Day trading">Day trading</option>
+      <option value="Autre">Autre</option>
+    </select>
+  </div>
+  <div class="form-group">
+    <label for="instruments">Instruments</label>
+    <select class="form-control" id="instruments" name="instruments" multiple onchange="toggleOtherInput('instruments')">
+      <option value="EUR/USD">EUR/USD</option>
+      <option value="GBP/USD">GBP/USD</option>
+      <option value="USD/JPY">USD/JPY</option>
+      <option value="USD/CHF">USD/CHF</option>
+      <option value="USD/CAD">USD/CAD</option>
+      <option value="AUD/USD">AUD/USD</option>
+      <option value="NZD/USD">NZD/USD</option>
+      <option value="Or">Or</option>
+      <option value="Argent">Argent</option>
+      <option value="Pétrole">Pétrole</option>
+      <option value="CAC40">CAC40</option>
+      <option value="DAX">DAX</option>
+      <option value="SP500">SP500</option>
+      <option value="NASDAQ">NASDAQ</option>
+      <option value="Bitcoin">Bitcoin</option>
+      <option value="Ethereum">Ethereum</option>
+      <option value="Autre">Autre</option>
+    </select>
+    <input type="text" class="form-control mt-2" id="instruments_other" name="instruments_other" placeholder="Précisez l'instrument..." style="display:none;">
+    <small class="form-text text-muted">Ctrl+clic pour sélectionner plusieurs instruments</small>
+  </div>
+  <div class="form-group">
+    <label for="timeframe">Unité de temps</label>
+    <select class="form-control" id="timeframe" name="timeframe" required onchange="toggleOtherInput('timeframe')">
+      <option value="M1">M1</option>
+      <option value="M5">M5</option>
+      <option value="M15">M15</option>
+      <option value="M30">M30</option>
+      <option value="H1">H1</option>
+      <option value="H4">H4</option>
+      <option value="D1">D1</option>
+      <option value="W1">W1</option>
+      <option value="MN">MN</option>
+      <option value="Autre">Autre</option>
+    </select>
+    <input type="text" class="form-control mt-2" id="timeframe_other" name="timeframe_other" placeholder="Précisez l'unité de temps..." style="display:none;">
+  </div>
+  <div class="form-group">
+    <label>Type d'entrée</label><br>
+    <div class="form-check form-check-inline">
+      <input class="form-check-input" type="radio" name="entry_type" id="entry_market" value="Market" checked onchange="toggleOtherInput('entry_type')">
+      <label class="form-check-label" for="entry_market">Market</label>
+    </div>
+    <div class="form-check form-check-inline">
+      <input class="form-check-input" type="radio" name="entry_type" id="entry_limit" value="Limit" onchange="toggleOtherInput('entry_type')">
+      <label class="form-check-label" for="entry_limit">Limit</label>
+    </div>
+    <div class="form-check form-check-inline">
+      <input class="form-check-input" type="radio" name="entry_type" id="entry_stop" value="Stop" onchange="toggleOtherInput('entry_type')">
+      <label class="form-check-label" for="entry_stop">Stop</label>
+    </div>
+    <div class="form-check form-check-inline">
+      <input class="form-check-input" type="radio" name="entry_type" id="entry_other" value="Autre" onchange="toggleOtherInput('entry_type')">
+      <label class="form-check-label" for="entry_other">Autre</label>
+    </div>
+    <input type="text" class="form-control mt-2" id="entry_type_other" name="entry_type_other" placeholder="Précisez le type d'entrée..." style="display:none;">
+  </div>
+  <div class="form-group">
+    <label>Type de sortie</label><br>
+    <div class="form-check form-check-inline">
+      <input class="form-check-input" type="checkbox" name="exit_type" value="TP" onchange="toggleOtherInput('exit_type')"> TP
+    </div>
+    <div class="form-check form-check-inline">
+      <input class="form-check-input" type="checkbox" name="exit_type" value="SL" onchange="toggleOtherInput('exit_type')"> SL
+    </div>
+    <div class="form-check form-check-inline">
+      <input class="form-check-input" type="checkbox" name="exit_type" value="Trailing Stop" onchange="toggleOtherInput('exit_type')"> Trailing Stop
+    </div>
+    <div class="form-check form-check-inline">
+      <input class="form-check-input" type="checkbox" name="exit_type" value="Break Even" onchange="toggleOtherInput('exit_type')"> Break Even
+    </div>
+    <div class="form-check form-check-inline">
+      <input class="form-check-input" type="checkbox" name="exit_type" value="Autre" onchange="toggleOtherInput('exit_type')"> Autre
+    </div>
+    <input type="text" class="form-control mt-2" id="exit_type_other" name="exit_type_other" placeholder="Précisez le type de sortie..." style="display:none;">
+  </div>
+  <div class="form-group">
+    <label>Indicateurs utilisés</label><br>
+    <div class="form-check form-check-inline">
+      <input class="form-check-input" type="checkbox" name="indicators" value="RSI" onchange="toggleOtherInput('indicators')"> RSI
+    </div>
+    <div class="form-check form-check-inline">
+      <input class="form-check-input" type="checkbox" name="indicators" value="MACD" onchange="toggleOtherInput('indicators')"> MACD
+    </div>
+    <div class="form-check form-check-inline">
+      <input class="form-check-input" type="checkbox" name="indicators" value="Moyenne mobile" onchange="toggleOtherInput('indicators')"> Moyenne mobile
+    </div>
+    <div class="form-check form-check-inline">
+      <input class="form-check-input" type="checkbox" name="indicators" value="Bollinger" onchange="toggleOtherInput('indicators')"> Bandes de Bollinger
+    </div>
+    <div class="form-check form-check-inline">
+      <input class="form-check-input" type="checkbox" name="indicators" value="Ichimoku" onchange="toggleOtherInput('indicators')"> Ichimoku
+    </div>
+    <div class="form-check form-check-inline">
+      <input class="form-check-input" type="checkbox" name="indicators" value="Autre" onchange="toggleOtherInput('indicators')"> Autre
+    </div>
+    <input type="text" class="form-control mt-2" id="indicators_other" name="indicators_other" placeholder="Précisez l'indicateur..." style="display:none;">
+  </div>
+  <div class="form-group">
+    <label for="risk">Gestion du risque</label>
+    <select class="form-control" id="risk" name="risk" required onchange="toggleOtherInput('risk')">
+      <option value="1%">1% par trade</option>
+      <option value="2%">2% par trade</option>
+      <option value="3%">3% par trade</option>
+      <option value="autre">Autre</option>
+    </select>
+    <input type="text" class="form-control mt-2" id="risk_other" name="risk_other" placeholder="Précisez la gestion du risque..." style="display:none;">
+  </div>
+  <div class="form-group">
+    <label for="max_loss">Perte Maximale (en devise)</label>
+    <input type="number" class="form-control" id="max_loss" name="max_loss" placeholder="Exemple : 1000">
+  </div>
+  <div class="form-group">
+    <label for="rules">Règles de la stratégie</label>
+    <textarea class="form-control" id="rules" name="rules" rows="3" required></textarea>
+  </div>
+  <div class="form-group">
+    <label for="description">Description complémentaire</label>
+    <textarea class="form-control" id="description" name="description" rows="2"></textarea>
+  </div>
+  <button type="submit" class="btn btn-primary">Créer</button>
+</form>
+
+<hr>
+<h3>Vos Stratégies</h3>
+{% if strategies %}
+  <ul class="list-group">
+    {% for strategy in strategies %}
+    <li class="list-group-item">
+      <h5>{{ strategy.name }}</h5>
+      <p>{{ strategy.description }}</p>
+      <h6>Validations :</h6>
+      <form method="POST" action="{{ url_for('update_strategy_validations', strategy_id=strategy.id) }}">
+        {% for validation in strategy.validations %}
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" id="validation_{{ loop.index }}" name="validation_{{ loop.index }}" {% if validation.completed %}checked{% endif %}>
+          <label class="form-check-label" for="validation_{{ loop.index }}">
+            {{ validation.text }}
+          </label>
+        </div>
+        {% endfor %}
+        <button type="submit" class="btn btn-success btn-sm mt-2">Mettre à jour</button>
+      </form>
+      <a href="{{ url_for('strategy_detail', strategy_id=strategy.id) }}" class="btn btn-info btn-sm">Voir</a>
+      <form action="{{ url_for('delete_strategy', strategy_id=strategy.id) }}" method="POST" style="display:inline;">
+        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette stratégie ?');">Supprimer</button>
+      </form>
+    </li>
+    {% endfor %}
+  </ul>
+{% else %}
+  <p>Aucune stratégie définie pour le moment.</p>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+function toggleOtherInput(field) {
+  if(field === 'instruments') {
+    const select = document.getElementById('instruments');
+    const other = document.getElementById('instruments_other');
+    let found = false;
+    for (let option of select.selectedOptions) {
+      if(option.value === 'Autre') found = true;
+    }
+    other.style.display = found ? '' : 'none';
+  }
+  if(field === 'timeframe') {
+    const select = document.getElementById('timeframe');
+    const other = document.getElementById('timeframe_other');
+    other.style.display = select.value === 'Autre' ? '' : 'none';
+  }
+  if(field === 'entry_type') {
+    const other = document.getElementById('entry_type_other');
+    const radio = document.getElementById('entry_other');
+    other.style.display = radio.checked ? '' : 'none';
+  }
+  if(field === 'exit_type') {
+    const checkboxes = document.getElementsByName('exit_type');
+    const other = document.getElementById('exit_type_other');
+    let found = false;
+    for (let box of checkboxes) {
+      if(box.value === 'Autre' && box.checked) found = true;
+    }
+    other.style.display = found ? '' : 'none';
+  }
+  if(field === 'indicators') {
+    const checkboxes = document.getElementsByName('indicators');
+    const other = document.getElementById('indicators_other');
+    let found = false;
+    for (let box of checkboxes) {
+      if(box.value === 'Autre' && box.checked) found = true;
+    }
+    other.style.display = found ? '' : 'none';
+  }
+  if(field === 'risk') {
+    const select = document.getElementById('risk');
+    const other = document.getElementById('risk_other');
+    other.style.display = select.value === 'autre' ? '' : 'none';
+  }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  // Initial check for all fields
+  toggleOtherInput('instruments');
+  toggleOtherInput('timeframe');
+  toggleOtherInput('entry_type');
+  toggleOtherInput('exit_type');
+  toggleOtherInput('indicators');
+  toggleOtherInput('risk');
+
+  // Add event listeners for dynamic fields
+  document.getElementById('instruments').addEventListener('change', function() { toggleOtherInput('instruments'); });
+  document.getElementById('timeframe').addEventListener('change', function() { toggleOtherInput('timeframe'); });
+  document.getElementsByName('entry_type').forEach(function(radio) {
+    radio.addEventListener('change', function() { toggleOtherInput('entry_type'); });
+  });
+  document.getElementsByName('exit_type').forEach(function(box) {
+    box.addEventListener('change', function() { toggleOtherInput('exit_type'); });
+  });
+  document.getElementsByName('indicators').forEach(function(box) {
+    box.addEventListener('change', function() { toggleOtherInput('indicators'); });
+  });
+  document.getElementById('risk').addEventListener('change', function() { toggleOtherInput('risk'); });
+});
+</script>
+{% endblock %}

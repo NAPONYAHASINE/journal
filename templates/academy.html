@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1 class="academy-title">Bloom Forex Trading Academy</h1>
+{% if session.get('is_admin') %}
+<a href="{{ url_for('create_module') }}" class="btn btn-primary">Créer un module</a>
+{% endif %}
+<hr>
+<div class="modules-list row justify-content-center">
+    {% for item in modules %}
+    {% set module = item.module %}
+    <div class="col-md-6 mb-3">
+        <div class="card module-card h-100" onclick="window.location='{{ url_for('module_detail', module_id=module.id) }}'" tabindex="0" aria-label="Ouvrir le module {{ module.nom }}">
+            {% if module.image %}
+            <img src="{{ url_for('static', filename='uploads/' ~ module.image) }}" alt="Image du module" class="card-img-top">
+            {% endif %}
+            <div class="card-body">
+                <h5 class="card-title">{{ module.nom }}</h5>
+                <p class="card-text">{{ module.description }}</p>
+                <p><b>Nombre de cours :</b> {{ module.nb_cours }}</p>
+                <p><b>Compétences acquises :</b> {{ module.competences }}</p>
+                <p class="text-muted creation-date">Créé le {{ module.date_creation if module.date_creation else 'N/A' }}</p>
+                <div class="d-flex flex-wrap gap-2 mt-2">
+                    {% if session.get('is_admin') %}
+                    <a href="{{ url_for('create_cours', module_id=module.id) }}" class="btn btn-success">Ajouter un cours</a>
+                    <form method="post" action="{{ url_for('delete_module', module_id=module.id) }}" onsubmit="return confirm('Supprimer ce module et tous ses cours ?');" class="d-inline-block">
+                        <button type="submit" class="btn btn-danger">Supprimer le module</button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

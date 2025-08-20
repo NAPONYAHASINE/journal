@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Détail de l'Analyse - Trading Journal{% endblock %}
+{% block content %}
+<h2>{{ analysis.titre }}</h2>
+<p>Date de création : {{ analysis.date_creation | datetimeformat('%d %B %Y') }}</p>
+<p>{{ analysis.contenu }}</p>
+{% if analysis.image %}
+  <img src="{{ url_for('uploaded_file', filename=analysis.image) }}" alt="Image de l'analyse" class="img-fluid">
+{% endif %}
+<a href="{{ url_for('analyses', journal_id=analysis.journal_id) }}" class="btn btn-secondary mt-3">Retour aux Analyses</a>
+{% endblock %}

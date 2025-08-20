@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Ajouter un cours au module : {{ module.nom }}</h2>
+<form method="POST" enctype="multipart/form-data">
+    <div class="form-group">
+        <label>Titre du cours</label>
+        <input type="text" name="titre" class="form-control" required>
+    </div>
+    <div class="form-group">
+        <label>Description</label>
+        <textarea name="description" class="form-control" required></textarea>
+    </div>
+    <div class="form-group">
+        <label>Prix (€)</label>
+        <input type="number" step="0.01" name="prix" class="form-control" required placeholder="Prix du cours" title="Prix du cours">
+    </div>
+    <div class="form-group">
+        <label>Fichier (vidéo, PDF ou texte)</label>
+        <input type="file" name="fichier" class="form-control" placeholder="Fichier du cours" title="Fichier du cours">
+    </div>
+    <button type="submit" class="btn btn-success">Ajouter le cours</button>
+</form>
+{% endblock %}

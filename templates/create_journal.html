@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Créer un Journal - Trading Journal{% endblock %}
+{% block content %}
+<h2>Créer un Journal</h2>
+<form method="POST">
+  <div class="form-group">
+    <label for="nom">Nom du Journal</label>
+    <input type="text" class="form-control" name="nom" required>
+  </div>
+  <div class="form-group">
+    <label for="capital_initial">Capital Initial</label>
+    <input type="number" step="0.01" class="form-control" name="capital_initial" required>
+  </div>
+  <div class="form-group">
+    <label for="devise">Devise</label>
+    <select class="form-control" name="devise" required>
+      <option value="EUR">EUR</option>
+      <option value="USD">USD</option>
+      <option value="GBP">GBP</option>
+      <option value="JPY">JPY</option>
+    </select>
+  </div>
+  <div class="form-group">
+    <label for="levier">Effet de levier</label>
+    <input type="number" step="0.1" class="form-control" name="levier" value="1" required>
+    <small class="form-text text-muted">Par défaut 1 (aucun effet de levier). Vous pouvez le modifier plus tard.</small>
+  </div>
+  <button type="submit" class="btn btn-primary">Créer</button>
+</form>
+{% endblock %}

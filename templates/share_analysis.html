@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Partager une Analyse - Trading Journal{% endblock %}
+{% block content %}
+<h2>Partager l'Analyse : {{ analysis.titre }}</h2>
+<form method="POST">
+  <div class="form-group">
+    <label for="shared_with">Partager avec :</label>
+    <input type="text" class="form-control" name="shared_with" placeholder="Tapez un email ou 'all' pour la communauté" required>
+  </div>
+  <button type="submit" class="btn btn-primary">Partager</button>
+</form>
+{% endblock %}

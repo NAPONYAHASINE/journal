@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Analyse par Heure{% endblock %}
+{% block content %}
+<h2>Analyse par Heure</h2>
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Heure</th>
+            <th>Nombre de Trades</th>
+            <th>Résultat Total</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for hour, data in trades_by_hour.items() %}
+        <tr>
+            <td>{{ hour }}</td>
+            <td>{{ data.count }}</td>
+            <td>{{ data.total_result }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
