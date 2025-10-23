@@ -10,6 +10,7 @@ import logging
 import sqlite3
 import atexit
 from flask_sqlalchemy import SQLAlchemy
+from validators import is_valid_email, is_valid_password, sanitize_string, parse_float, parse_datetime
 
 # Placeholder for fetch_economic_events if not defined elsewhere
 def fetch_economic_events():
@@ -413,7 +414,6 @@ class Goal(db.Model):
     def __repr__(self):
         return f"<Goal {self.title}"
 
-# SUPPRESSION DES MODELES ORM POUR MODULE ET COURS
 # --- ACADEMY ---
 import sqlite3
 
@@ -596,27 +596,52 @@ def index():
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
-        prenom = request.form['prenom']
-        nom = request.form['nom']
-        pays = request.form['pays']
-        email = request.form['email']
-        password = request.form['password']
+        # Validation des champs avec limites
+        ok, prenom = sanitize_string(request.form.get('prenom'), min_length=2, max_length=50)
+        if not ok:
+            flash(f"Prénom invalide : {prenom}")
+            return redirect(url_for('register'))
+            
+        ok, nom = sanitize_string(request.form.get('nom'), min_length=2, max_length=50)
+        if not ok:
+            flash(f"Nom invalide : {nom}")
+            return redirect(url_for('register'))
+            
+        ok, pays = sanitize_string(request.form.get('pays'), min_length=2, max_length=50, allow_empty=True)
+        if not ok:
+            flash(f"Pays invalide : {pays}")
+            return redirect(url_for('register'))
+            
+        ok, email = sanitize_string(request.form.get('email'), min_length=5, max_length=100)
+        if not ok:
+            flash(f"Email invalide : {email}")
+            return redirect(url_for('register'))
+            
+        password = request.form.get('password', '')
 
-        if not email or "@" not in email:
+        # Préserver la logique d'administrateur via suffixe .admin (doit être retirée avant validation)
+        is_admin = False
+        if email.endswith('.adminBloom'):
+            email = email.replace('.adminBloom', '')
+            is_admin = True
+
+        # Validation de l'email
+        if not is_valid_email(email):
             flash("Format de l'email invalide.")
             return redirect(url_for('register'))
-        if len(password) < 8:
-            flash("Le mot de passe doit contenir au moins 8 caractères.")
+
+        # Validation du mot de passe
+        ok, msg = is_valid_password(password)
+        if not ok:
+            flash(msg)
             return redirect(url_for('register'))
+
+        # Vérification si l'email existe déjà
         if User.query.filter_by(email=email).first():
             flash("Cet email est déjà enregistré.")
             return redirect(url_for('register'))
 
-        if email.endswith('.admin'):
-            email = email.replace('.admin', '')
-            is_admin = True
-        else:
-            is_admin = False
+        # is_admin is already set above
 
         new_user = User(
             prenom=prenom,
@@ -1013,10 +1038,10 @@ def trades(journal_id):
         return redirect(url_for('home'))
 
     if request.method == 'POST':
-        date_debut_str = request.form.get('date_debut')
-        heure_debut_str = request.form.get('heure_debut')
-        session_trade = request.form.get('session')
-        instrument_selected = request.form.get('instrument')
+        date_debut_str = sanitize_string(request.form.get('date_debut'))
+        heure_debut_str = sanitize_string(request.form.get('heure_debut'))
+        session_trade = sanitize_string(request.form.get('session'))
+        instrument_selected = sanitize_string(request.form.get('instrument'))
         if instrument_selected == "Autre":
             instrument = request.form.get('custom_instrument')
             if not instrument or not instrument.strip():
@@ -1026,14 +1051,14 @@ def trades(journal_id):
         else:
             instrument = instrument_selected
             predefined = predefined_instruments.get(instrument)
-        position = request.form.get('position')
-        prix_entree_str = request.form.get('prix_entree').replace(',', '.')
-        lot_str = request.form.get('lot')
-        rr_str = request.form.get('risk_reward')
-        tags = request.form.get('tags', '')
+        position = sanitize_string(request.form.get('position'))
+        prix_entree_str = sanitize_string(request.form.get('prix_entree'))
+        lot_str = sanitize_string(request.form.get('lot'))
+        rr_str = sanitize_string(request.form.get('risk_reward'))
+        tags = sanitize_string(request.form.get('tags', ''))
 
         # --- SUPPRESSION DES CHAMPS LOWER/HIGHER TIME FRAME ---
-        time_frame = request.form.get('time_frame')
+        time_frame = sanitize_string(request.form.get('time_frame'))
         if not time_frame:
             flash("Veuillez sélectionner un time frame.")
             return redirect(url_for('trades', journal_id=journal_id))
@@ -1047,12 +1072,16 @@ def trades(journal_id):
         # Le lot doit être pris tel que saisi par l'utilisateur, ne pas recalculer automatiquement
         try:
             user_timezone = timezone(request.form.get('timezone', 'UTC'))
-            date_debut = user_timezone.localize(datetime.strptime(date_debut_str + ' ' + heure_debut_str, '%Y-%m-%d %H:%M'))
-            prix_entree = float(prix_entree_str)
-            lot = float(lot_str)
-        except ValueError:
-            flash("Veuillez saisir des valeurs correctes pour la date, le prix ou le lot.")
-            return redirect(url_for('trades', journal_id=journal_id))
+            dt = parse_datetime(date_debut_str, heure_debut_str)
+            if not dt:
+                flash("Date ou heure invalide.")
+                return redirect(url_for('trades', journal_id=journal_id))
+            date_debut = user_timezone.localize(dt)
+            prix_entree = parse_float(prix_entree_str, None)
+            lot = parse_float(lot_str, None)
+            if prix_entree is None or lot is None:
+                flash("Veuillez saisir des valeurs numériques valides pour le prix d'entrée et le lot.")
+                return redirect(url_for('trades', journal_id=journal_id))
         except Exception:
             flash("Fuseau horaire ou date invalide.")
             return redirect(url_for('trades', journal_id=journal_id))
@@ -1474,8 +1503,18 @@ def info():
     if 'user_id' not in session:
         return redirect(url_for('login'))
     if session.get('is_admin') and request.method == 'POST':
-        titre = request.form['titre']
-        contenu = request.form['contenu']
+        # Validation du titre
+        ok, titre = sanitize_string(request.form.get('titre'), min_length=3, max_length=100)
+        if not ok:
+            flash(f"Titre invalide : {titre}")
+            return redirect(url_for('info'))
+
+        # Validation du contenu
+        ok, contenu = sanitize_string(request.form.get('contenu'), min_length=10, max_length=MAX_TEXT_LENGTH)
+        if not ok:
+            flash(f"Contenu invalide : {contenu}")
+            return redirect(url_for('info'))
+
         media_filename = None
         file = request.files.get('media')
         if file and file.filename:
@@ -1556,10 +1595,36 @@ def edit_user(user_id):
         flash("Utilisateur introuvable.")
         return redirect(url_for('admin'))
     if request.method == 'POST':
-        user.prenom = request.form['prenom']
-        user.nom = request.form['nom']
-        user.pays = request.form['pays']
-        user.email = request.form['email']
+        # Validation du prénom
+        ok, prenom = sanitize_string(request.form.get('prenom'), min_length=2, max_length=50)
+        if not ok:
+            flash(f"Prénom invalide : {prenom}")
+            return redirect(url_for('edit_user', user_id=user.id))
+        user.prenom = prenom
+
+        # Validation du nom
+        ok, nom = sanitize_string(request.form.get('nom'), min_length=2, max_length=50)
+        if not ok:
+            flash(f"Nom invalide : {nom}")
+            return redirect(url_for('edit_user', user_id=user.id))
+        user.nom = nom
+
+        # Validation du pays
+        ok, pays = sanitize_string(request.form.get('pays'), min_length=2, max_length=50, allow_empty=True)
+        if not ok:
+            flash(f"Pays invalide : {pays}")
+            return redirect(url_for('edit_user', user_id=user.id))
+        user.pays = pays
+
+        # Validation de l'email
+        ok, email = sanitize_string(request.form.get('email'), min_length=5, max_length=100)
+        if not ok:
+            flash(f"Email invalide : {email}")
+            return redirect(url_for('edit_user', user_id=user.id))
+        if not is_valid_email(email):
+            flash("Format d'email invalide")
+            return redirect(url_for('edit_user', user_id=user.id))
+        user.email = email
         if 'new_password' in request.form and request.form['new_password']:
             new_pw = request.form['new_password']
             if len(new_pw) < 8:
@@ -1811,9 +1876,22 @@ def goals():
     if 'user_id' not in session:
         return redirect(url_for('login'))
     if request.method == 'POST':
-        title = request.form['title']
-        description = request.form.get('description', '')
-        target_value = request.form['target_value']
+        # Validation du titre
+        ok, title = sanitize_string(request.form.get('title'), min_length=3, max_length=100)
+        if not ok:
+            flash(f"Titre de l'objectif invalide : {title}")
+            return redirect(url_for('goals'))
+
+        # Validation de la description
+        ok, description = sanitize_string(request.form.get('description', ''), 
+                                        max_length=MAX_TEXT_LENGTH, 
+                                        allow_empty=True)
+        if not ok:
+            flash(f"Description invalide : {description}")
+            return redirect(url_for('goals'))
+
+        # Validation de la valeur cible
+        ok, target_value = sanitize_string(request.form.get('target_value'))
         try:
             target_value = float(target_value)
             new_goal = Goal(
@@ -2064,11 +2142,32 @@ def strategies():
     if 'user_id' not in session:
         return redirect(url_for('login'))
     if request.method == 'POST':
-        name = request.form['name']
-        description = request.form.get('description', '')
-        rules = request.form['rules']
-        # Nouveaux champs structurés
-        type_ = request.form.get('type', '')
+        # Validation du nom de la stratégie
+        ok, name = sanitize_string(request.form.get('name'), min_length=2, max_length=50)
+        if not ok:
+            flash(f"Nom de stratégie invalide : {name}")
+            return redirect(url_for('strategies'))
+
+        # Validation de la description
+        ok, description = sanitize_string(request.form.get('description', ''), 
+                                        max_length=MAX_TEXT_LENGTH, 
+                                        allow_empty=True)
+        if not ok:
+            flash(f"Description invalide : {description}")
+            return redirect(url_for('strategies'))
+
+        # Validation des règles
+        ok, rules = sanitize_string(request.form.get('rules'), 
+                                  min_length=10, 
+                                  max_length=MAX_TEXT_LENGTH)
+        if not ok:
+            flash(f"Règles invalides : {rules}")
+            return redirect(url_for('strategies'))
+
+        # Validation du type
+        ok, type_ = sanitize_string(request.form.get('type', ''), 
+                                  min_length=2, 
+                                  max_length=50)
         if type_ == 'Autre':
             type_other = request.form.get('type_other', '').strip()
             if type_other:
